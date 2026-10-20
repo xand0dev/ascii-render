@@ -40,13 +40,12 @@ beat-synced styles — exported to MP4, GIF, PNG or plain text. Everything runs 
 
 <img src="docs/assets/editor.png" width="100%" alt="ASCII Render editor UI" />
 
-- **Drop a video** (or hit *Демо*) and tweak with live preview — ~10–20 ms per 1080p frame.
+- **Drop a video** (or hit *Demo*) and tweak with live preview — ~10–20 ms per 1080p frame.
 - **Zoom down to single glyphs**, pan around, compare with the original using the wipe.
 - **Presets with live thumbnails** of your own footage, randomizer, undo/redo, save your own.
 - **Share a style as a link** or a `.json` file; open `?demo` links to try it instantly.
 - **Camera mode** with recording, keyboard shortcuts for everything (press <kbd>?</kbd>).
-
-> The editor UI is in Russian for now — English UI is the first item on the [roadmap](#-roadmap).
+- **English and Ukrainian UI** — picked from your browser language, switch any time with **EN / УКР** in the top bar (or `?lang=en` / `?lang=uk`).
 
 ## 🚀 Quick start
 
@@ -173,6 +172,7 @@ src/
   looks.ts      beat switching, A → B blending, reframing
   audio.ts      bass envelope and beat detection
   export.ts     WebCodecs MP4 + GIF export
+  i18n.ts       UI translations (English, Ukrainian)
   main.ts, ui/  the editor
 mcp/            MCP server: tools, ffmpeg pipeline, Node canvas platform
 scripts/        procedural scenes + generator for every image and video in this README
@@ -190,7 +190,8 @@ scripts/        procedural scenes + generator for every image and video in this 
 
 ## 🗺 Roadmap
 
-- [ ] English UI (i18n)
+- [x] English & Ukrainian UI
+- [ ] More languages — translations live in [`src/i18n.ts`](src/i18n.ts), PRs welcome
 - [ ] WebGL renderer for real-time 4K preview
 - [ ] Transparent-background export (WebM with alpha)
 - [ ] Batch processing of a folder

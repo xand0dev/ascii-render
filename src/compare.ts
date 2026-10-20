@@ -3,7 +3,7 @@ import type { Crop } from './looks';
 /** Original on the left, ASCII on the right, with a slowly swinging divider. */
 export function drawCompare(
   comp: HTMLCanvasElement, source: CanvasImageSource, ascii: HTMLCanvasElement, crop: Crop, t: number,
-  labels: [string, string] = ['ОРИГИНАЛ', 'ASCII'],
+  labels: [string, string] = ['ORIGINAL', 'ASCII'],
 ) {
   const W = comp.width, H = comp.height;
   const ctx = comp.getContext('2d')!;

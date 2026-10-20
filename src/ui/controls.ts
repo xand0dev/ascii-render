@@ -1,82 +1,88 @@
 import { CHARSETS, DEFAULTS, FONTS, type Settings } from '../ascii';
+import { t, tryT } from '../i18n';
 import { icon } from './icons';
 
 type Key = keyof Settings;
+// Labels come from i18n: `c.<key>`, optional `c.<key>.hint` and `c.<key>.ph`; seg option labels are i18n keys or raw text.
 type Ctl =
-  | { key: Key; label: string; type: 'range'; min: number; max: number; step: number; hint?: string }
-  | { key: Key; label: string; type: 'seg'; options: [string, string][] }
-  | { key: Key; label: string; type: 'toggle'; hint?: string }
-  | { key: Key; label: string; type: 'color' }
-  | { key: Key; label: string; type: 'text'; placeholder?: string }
-  | { key: Key; label: string; type: 'charset' }
-  | { key: Key; label: string; type: 'font' };
+  | { key: Key; type: 'range'; min: number; max: number; step: number }
+  | { key: Key; type: 'seg'; options: [string, string][] }
+  | { key: Key; type: 'toggle' }
+  | { key: Key; type: 'color' }
+  | { key: Key; type: 'text'; placeholder?: string }
+  | { key: Key; type: 'charset' }
+  | { key: Key; type: 'font' };
 
-interface Section { id: string; title: string; icon: string; badge?: string; ctls: Ctl[] }
+interface Section { id: string; icon: string; badge?: string; ctls: Ctl[] }
 
 const SECTIONS: Section[] = [
   {
-    id: 'wow', title: 'Вау-эффекты', icon: 'sparkles', badge: 'NEW', ctls: [
-      { key: 'audioReact', label: '🎵 Реакция на музыку', type: 'range', min: 0, max: 1, step: 0.01, hint: 'Бас раскачивает яркость, свечение и размер символов' },
-      { key: 'glitch', label: '⚡ Глитч', type: 'range', min: 0, max: 1, step: 0.01, hint: 'RGB-сдвиг, смещённые полосы, битые символы' },
-      { key: 'decode', label: '🔓 Декодирование, с', type: 'range', min: 0, max: 4, step: 0.1, hint: 'Интро: кадр собирается из бегущих символов' },
-      { key: 'rain', label: '🌧 Цифровой дождь', type: 'range', min: 0, max: 1, step: 0.01, hint: 'Падающие струи символов. Цвет — «Цвет акцента» в разделе «Цвет»' },
-      { key: 'trails', label: '👻 Шлейф', type: 'range', min: 0, max: 0.95, step: 0.01, hint: 'Символы оставляют затухающий след' },
-      { key: 'motion', label: '🏃 Только движение', type: 'range', min: 0, max: 1, step: 0.01, hint: 'Подсвечивает то, что движется, статичный фон гаснет' },
-      { key: 'overlayText', label: '🔤 Текст в ASCII', type: 'text', placeholder: 'например, xand0dev' },
-      { key: 'overlaySize', label: 'Размер текста', type: 'range', min: 0.08, max: 0.7, step: 0.01 },
-      { key: 'overlayPos', label: 'Позиция', type: 'seg', options: [['top', 'Верх'], ['center', 'Центр'], ['bottom', 'Низ']] },
-      { key: 'overlayColor', label: 'Цвет текста', type: 'color' },
+    id: 'wow', icon: 'sparkles', badge: 'NEW', ctls: [
+      { key: 'audioReact', type: 'range', min: 0, max: 1, step: 0.01 },
+      { key: 'glitch', type: 'range', min: 0, max: 1, step: 0.01 },
+      { key: 'decode', type: 'range', min: 0, max: 4, step: 0.1 },
+      { key: 'rain', type: 'range', min: 0, max: 1, step: 0.01 },
+      { key: 'trails', type: 'range', min: 0, max: 0.95, step: 0.01 },
+      { key: 'motion', type: 'range', min: 0, max: 1, step: 0.01 },
+      { key: 'overlayText', type: 'text' },
+      { key: 'overlaySize', type: 'range', min: 0.08, max: 0.7, step: 0.01 },
+      { key: 'overlayPos', type: 'seg', options: [['top', 'opt.top'], ['center', 'opt.center'], ['bottom', 'opt.bottom']] },
+      { key: 'overlayColor', type: 'color' },
     ],
   },
   {
-    id: 'grid', title: 'Сетка', icon: 'grid', ctls: [
-      { key: 'columns', label: 'Колонки', type: 'range', min: 40, max: 400, step: 1, hint: 'Сколько символов по ширине' },
-      { key: 'cellAspect', label: 'Высота ячейки', type: 'range', min: 1, max: 2.5, step: 0.05 },
-      { key: 'fontScale', label: 'Размер шрифта', type: 'range', min: 0.6, max: 1.6, step: 0.05 },
-      { key: 'font', label: 'Шрифт', type: 'font' },
-      { key: 'fontWeight', label: 'Толщина', type: 'seg', options: [['300', 'Light'], ['500', 'Med'], ['700', 'Bold'], ['800', 'Black']] },
+    id: 'grid', icon: 'grid', ctls: [
+      { key: 'columns', type: 'range', min: 40, max: 400, step: 1 },
+      { key: 'cellAspect', type: 'range', min: 1, max: 2.5, step: 0.05 },
+      { key: 'fontScale', type: 'range', min: 0.6, max: 1.6, step: 0.05 },
+      { key: 'font', type: 'font' },
+      { key: 'fontWeight', type: 'seg', options: [['300', 'Light'], ['500', 'Med'], ['700', 'Bold'], ['800', 'Black']] },
     ],
   },
   {
-    id: 'chars', title: 'Символы', icon: 'type', ctls: [
-      { key: 'charset', label: 'Набор', type: 'charset' },
-      { key: 'customChars', label: 'Свои символы', type: 'text', placeholder: ' .:-=+*#%@' },
-      { key: 'sortDensity', label: 'Сортировать по плотности', type: 'toggle', hint: 'Измеряет реальную заливку глифов в шрифте' },
-      { key: 'edges', label: 'Контуры  / \\ | -', type: 'toggle', hint: 'Рисует линии по краям объектов' },
-      { key: 'edgeThreshold', label: 'Порог контуров', type: 'range', min: 0.1, max: 1.5, step: 0.01 },
-      { key: 'noise', label: 'Мерцание', type: 'range', min: 0, max: 0.3, step: 0.005 },
+    id: 'chars', icon: 'type', ctls: [
+      { key: 'charset', type: 'charset' },
+      { key: 'customChars', type: 'text', placeholder: ' .:-=+*#%@' },
+      { key: 'sortDensity', type: 'toggle' },
+      { key: 'edges', type: 'toggle' },
+      { key: 'edgeThreshold', type: 'range', min: 0.1, max: 1.5, step: 0.01 },
+      { key: 'noise', type: 'range', min: 0, max: 0.3, step: 0.005 },
     ],
   },
   {
-    id: 'tone', title: 'Тон', icon: 'sun', ctls: [
-      { key: 'contrast', label: 'Контраст', type: 'range', min: 0.3, max: 3, step: 0.01 },
-      { key: 'brightness', label: 'Яркость', type: 'range', min: -0.5, max: 0.5, step: 0.01 },
-      { key: 'gamma', label: 'Гамма', type: 'range', min: 0.3, max: 2.5, step: 0.01 },
-      { key: 'invert', label: 'Инверсия', type: 'toggle' },
+    id: 'tone', icon: 'sun', ctls: [
+      { key: 'contrast', type: 'range', min: 0.3, max: 3, step: 0.01 },
+      { key: 'brightness', type: 'range', min: -0.5, max: 0.5, step: 0.01 },
+      { key: 'gamma', type: 'range', min: 0.3, max: 2.5, step: 0.01 },
+      { key: 'invert', type: 'toggle' },
     ],
   },
   {
-    id: 'color', title: 'Цвет', icon: 'palette', ctls: [
-      { key: 'colorMode', label: 'Режим', type: 'seg', options: [['original', 'Из видео'], ['mono', 'Моно'], ['duotone', 'Градиент'], ['accent', 'Акцент'], ['thermal', 'Тепло']] },
-      { key: 'saturation', label: 'Насыщенность', type: 'range', min: 0, max: 3, step: 0.01 },
-      { key: 'colorNormalize', label: 'Яркость цвета', type: 'range', min: 0, max: 1, step: 0.01 },
-      { key: 'fg', label: 'Цвет символов', type: 'color' },
-      { key: 'duoA', label: 'Тени', type: 'color' },
-      { key: 'duoB', label: 'Свет', type: 'color' },
-      { key: 'accent', label: 'Цвет акцента', type: 'color' },
-      { key: 'accentTolerance', label: 'Охват акцента', type: 'range', min: 0.02, max: 0.3, step: 0.005, hint: 'Насколько близкие оттенки остаются цветными' },
-      { key: 'bg', label: 'Фон', type: 'color' },
-      { key: 'bgVideo', label: 'Видео под символами', type: 'range', min: 0, max: 1, step: 0.01 },
+    id: 'color', icon: 'palette', ctls: [
+      { key: 'colorMode', type: 'seg', options: [['original', 'opt.original'], ['mono', 'opt.mono'], ['duotone', 'opt.duotone'], ['accent', 'opt.accent'], ['thermal', 'opt.thermal']] },
+      { key: 'saturation', type: 'range', min: 0, max: 3, step: 0.01 },
+      { key: 'colorNormalize', type: 'range', min: 0, max: 1, step: 0.01 },
+      { key: 'fg', type: 'color' },
+      { key: 'duoA', type: 'color' },
+      { key: 'duoB', type: 'color' },
+      { key: 'accent', type: 'color' },
+      { key: 'accentTolerance', type: 'range', min: 0.02, max: 0.3, step: 0.005 },
+      { key: 'bg', type: 'color' },
+      { key: 'bgVideo', type: 'range', min: 0, max: 1, step: 0.01 },
     ],
   },
   {
-    id: 'fx', title: 'Эффекты', icon: 'zap', ctls: [
-      { key: 'glow', label: 'Свечение', type: 'range', min: 0, max: 1.5, step: 0.01 },
-      { key: 'glowRadius', label: 'Радиус свечения', type: 'range', min: 1, max: 30, step: 0.5 },
-      { key: 'scanlines', label: 'Скан-линии', type: 'range', min: 0, max: 0.8, step: 0.01 },
+    id: 'fx', icon: 'zap', ctls: [
+      { key: 'glow', type: 'range', min: 0, max: 1.5, step: 0.01 },
+      { key: 'glowRadius', type: 'range', min: 1, max: 30, step: 0.5 },
+      { key: 'scanlines', type: 'range', min: 0, max: 0.8, step: 0.01 },
     ],
   },
 ];
+
+const label = (k: Key) => tryT(`c.${k}`, k);
+const hint = (k: Key) => tryT(`c.${k}.hint`, '');
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 const COLLAPSE_KEY = 'ascii-render-collapsed';
 
@@ -103,7 +109,7 @@ export class Controls {
     if (this.collapsed.has(sec.id)) el.classList.add('collapsed');
     const head = document.createElement('button');
     head.className = 'sec-head';
-    head.innerHTML = `${icon(sec.icon, 14)}<span>${sec.title}${sec.badge ? `<em class="badge">${sec.badge}</em>` : ''}</span>${icon('chevron', 14)}`;
+    head.innerHTML = `${icon(sec.icon, 14)}<span>${tryT(`sec.${sec.id}`, sec.id)}${sec.badge ? `<em class="badge">${sec.badge}</em>` : ''}</span>${icon('chevron', 14)}`;
     head.addEventListener('click', () => {
       el.classList.toggle('collapsed');
       if (el.classList.contains('collapsed')) this.collapsed.add(sec.id); else this.collapsed.delete(sec.id);
@@ -131,7 +137,7 @@ export class Controls {
     if (c.type === 'range') {
       row.innerHTML = `
         <div class="ctl-head">
-          <span class="ctl-label" title="${c.hint ?? 'Двойной клик — сбросить'}">${c.label}</span>
+          <span class="ctl-label" title="${esc(hint(c.key) || t('ctl.dblReset'))}">${label(c.key)}</span>
           <input class="ctl-num" type="text" inputmode="decimal" spellcheck="false" />
         </div>
         <input type="range" min="${c.min}" max="${c.max}" step="${c.step}" />`;
@@ -165,24 +171,24 @@ export class Controls {
         row.classList.toggle('modified', Math.abs(v - Number(DEFAULTS[c.key])) > 1e-9);
       });
     } else if (c.type === 'seg') {
-      row.innerHTML = `<div class="ctl-head"><span class="ctl-label">${c.label}</span></div><div class="seg${c.options.length > 4 ? ' wrap' : ''}"></div>`;
+      row.innerHTML = `<div class="ctl-head"><span class="ctl-label">${label(c.key)}</span></div><div class="seg${c.options.length > 4 ? ' wrap' : ''}"></div>`;
       const seg = row.querySelector('.seg')!;
       const btns = c.options.map(([v, l]) => {
         const b = document.createElement('button');
-        b.textContent = l;
+        b.textContent = tryT(l, l);
         b.addEventListener('click', () => this.onChange(c.key, v));
         seg.appendChild(b);
         return [v, b] as const;
       });
       this.syncers.push((s) => btns.forEach(([v, b]) => b.classList.toggle('on', String(s[c.key]) === v)));
     } else if (c.type === 'toggle') {
-      row.innerHTML = `<label class="switch" title="${c.hint ?? ''}"><span class="ctl-label">${c.label}</span><input type="checkbox" /><i></i></label>`;
+      row.innerHTML = `<label class="switch" title="${esc(hint(c.key))}"><span class="ctl-label">${label(c.key)}</span><input type="checkbox" /><i></i></label>`;
       const cb = row.querySelector<HTMLInputElement>('input')!;
       cb.addEventListener('change', () => this.onChange(c.key, cb.checked));
       this.syncers.push((s) => { cb.checked = Boolean(s[c.key]); });
     } else if (c.type === 'color') {
       const canPick = 'EyeDropper' in window;
-      row.innerHTML = `<div class="color-row${canPick ? ' pick' : ''}"><span class="ctl-label">${c.label}</span>${canPick ? `<button class="icon-btn sm eyedrop" title="Пипетка: взять цвет с экрана">${icon('pipette', 14)}</button>` : ''}<label class="swatch"><input type="color" /><i></i></label><input class="hex" type="text" spellcheck="false" maxlength="7" /></div>`;
+      row.innerHTML = `<div class="color-row${canPick ? ' pick' : ''}"><span class="ctl-label">${label(c.key)}</span>${canPick ? `<button class="icon-btn sm eyedrop" title="${esc(t('ctl.eyedrop'))}">${icon('pipette', 14)}</button>` : ''}<label class="swatch"><input type="color" /><i></i></label><input class="hex" type="text" spellcheck="false" maxlength="7" /></div>`;
       row.querySelector('.eyedrop')?.addEventListener('click', async () => {
         try {
           const ED = (window as unknown as { EyeDropper: new () => { open(): Promise<{ sRGBHex: string }> } }).EyeDropper;
@@ -205,17 +211,17 @@ export class Controls {
         if (document.activeElement !== hex) hex.value = v;
       });
     } else if (c.type === 'text') {
-      row.innerHTML = `<div class="ctl-head"><span class="ctl-label">${c.label}</span></div><input class="text" type="text" spellcheck="false" placeholder="${c.placeholder ?? ''}" />`;
+      row.innerHTML = `<div class="ctl-head"><span class="ctl-label">${label(c.key)}</span></div><input class="text" type="text" spellcheck="false" placeholder="${esc(tryT(`c.${c.key}.ph`, c.placeholder ?? ''))}" />`;
       const t = row.querySelector<HTMLInputElement>('input')!;
       t.addEventListener('input', () => this.onChange(c.key, t.value));
       this.syncers.push((s) => { if (document.activeElement !== t) t.value = String(s[c.key]); });
     } else if (c.type === 'font') {
-      row.innerHTML = `<div class="ctl-head"><span class="ctl-label">${c.label}</span></div><div class="fonts"></div>`;
+      row.innerHTML = `<div class="ctl-head"><span class="ctl-label">${label(c.key)}</span></div><div class="fonts"></div>`;
       const grid = row.querySelector('.fonts')!;
       const btns = Object.entries(FONTS).map(([id, f]) => {
         const b = document.createElement('button');
         b.className = 'font-card';
-        b.innerHTML = `<span class="f-sample">Aa@#</span><span class="f-name">${f.label}</span>`;
+        b.innerHTML = `<span class="f-sample">Aa@#</span><span class="f-name">${tryT(`font.${id}`, f.label)}</span>`;
         (b.querySelector('.f-sample') as HTMLElement).style.fontFamily = f.family;
         b.addEventListener('click', () => this.onChange('font', id));
         grid.appendChild(b);
@@ -229,7 +235,7 @@ export class Controls {
         const b = document.createElement('button');
         b.className = 'charset';
         const sample = id === 'custom' ? 'Aa…' : Array.from(cs.chars).reverse().filter((ch) => ch !== ' ').slice(0, 9).join('');
-        b.innerHTML = `<span class="cs-sample"></span><span class="cs-name">${cs.label.replace(/\s*\(.*\)/, '')}</span>`;
+        b.innerHTML = `<span class="cs-sample"></span><span class="cs-name">${tryT(`cs.${id}`, cs.label)}</span>`;
         b.querySelector('.cs-sample')!.textContent = sample;
         b.addEventListener('click', () => this.onChange('charset', id));
         grid.appendChild(b);

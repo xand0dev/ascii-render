@@ -30,7 +30,7 @@ export function run(cmd: string, args: string[]): Promise<Buffer> {
     let err = '';
     p.stdout.on('data', (c: Buffer) => out.push(c));
     p.stderr.on('data', (c: Buffer) => { err += c.toString(); });
-    p.on('error', (e) => reject(new Error(`${cmd}: ${e.message}. Установлен ли ffmpeg? (brew install ffmpeg)`)));
+    p.on('error', (e) => reject(new Error(`${cmd}: ${e.message}. Is ffmpeg installed? (brew install ffmpeg)`)));
     p.on('close', (code) => (code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(err.trim().split('\n').slice(-3).join('\n') || `${cmd} exited ${code}`))));
   });
 }
@@ -40,7 +40,7 @@ export async function probe(path: string): Promise<VideoInfo> {
     '-v', 'error', '-print_format', 'json', '-show_streams', '-show_format', path,
   ])).toString());
   const v = json.streams?.find((s: { codec_type: string }) => s.codec_type === 'video');
-  if (!v) throw new Error('В файле нет видеодорожки');
+  if (!v) throw new Error('The file has no video track');
   const a = json.streams?.find((s: { codec_type: string }) => s.codec_type === 'audio');
   const [num, den] = String(v.avg_frame_rate || v.r_frame_rate || '30/1').split('/').map(Number);
   // honour rotation metadata from phones
@@ -115,7 +115,7 @@ export function spawnFf(args: string[]) {
   let stderr = '';
   p.stderr.on('data', (c: Buffer) => { stderr += c.toString(); if (stderr.length > 20000) stderr = stderr.slice(-10000); });
   const done = new Promise<void>((resolve, reject) => {
-    p.on('error', (e) => reject(new Error(`ffmpeg: ${e.message}. Установлен ли ffmpeg? (brew install ffmpeg)`)));
+    p.on('error', (e) => reject(new Error(`ffmpeg: ${e.message}. Is ffmpeg installed? (brew install ffmpeg)`)));
     p.on('close', (code) => (code === 0 ? resolve() : reject(new Error(stderr.trim().split('\n').slice(-4).join('\n') || `ffmpeg exited ${code}`))));
   });
   return { proc: p, done };

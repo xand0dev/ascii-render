@@ -3,6 +3,7 @@ import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 import { AsciiRenderer, type Settings } from './ascii';
 import { sampleEnvelope, type Envelope } from './audio';
 import { drawCompare } from './compare';
+import { t } from './i18n';
 
 export type CompareMode = 'none' | 'wipe';
 export type { Crop } from './looks';
@@ -33,13 +34,13 @@ export interface ExportOptions extends CommonOptions {
 
 export type GifOptions = CommonOptions;
 
-type Progress = (p: number, label: string) => void;
+type Progress = (p: number, label: string, etaSeconds?: number) => void;
 type FrameHook = (canvas: HTMLCanvasElement, index: number) => void;
 
 function waitEvent(el: EventTarget, name: string) {
   return new Promise<void>((resolve, reject) => {
     const ok = () => { cleanup(); resolve(); };
-    const fail = () => { cleanup(); reject(new Error(`Не удалось загрузить видео (${name})`)); };
+    const fail = () => { cleanup(); reject(new Error(t('err.loadVideo', { name }))); };
     const cleanup = () => {
       el.removeEventListener(name, ok);
       el.removeEventListener('error', fail);
@@ -65,7 +66,7 @@ async function pickVideoCodec(width: number, height: number, bitrate: number, fp
     const res = await VideoEncoder.isConfigSupported(config);
     if (res.supported) return config;
   }
-  throw new Error('Браузер не поддерживает H.264 кодирование для этого разрешения');
+  throw new Error(t('err.h264'));
 }
 
 async function decodeAudio(file: File, start: number, end: number, speed: number) {
@@ -133,7 +134,7 @@ async function renderFrames(
   const t0 = performance.now();
   try {
     for (let i = 0; i < total; i++) {
-      if (signal.aborted) throw new DOMException('Отменено', 'AbortError');
+      if (signal.aborted) throw new DOMException(t('err.cancelled'), 'AbortError');
       const srcT = Math.min(o.start + (i * speed) / o.fps, video.duration - 0.001);
       await seek(video, srcT);
       const look = o.settingsAt ? o.settingsAt(srcT) : settings;
@@ -144,14 +145,14 @@ async function renderFrames(
       });
       let frame = canvas;
       if (comp) {
-        drawCompare(comp, video, canvas, crop, i / o.fps);
+        drawCompare(comp, video, canvas, crop, i / o.fps, [t('wipe.original'), 'ASCII']);
         frame = comp;
       }
       onFrame?.(frame, i);
       await consume(frame, i);
       const elapsed = (performance.now() - t0) / 1000;
       const eta = (elapsed / (i + 1)) * (total - i - 1);
-      onProgress((i + 1) / total, `Кадр ${i + 1}/${total} · осталось ~${Math.ceil(eta)}с`);
+      onProgress((i + 1) / total, t('exp.progress', { i: i + 1, total, eta: Math.ceil(eta) }), Math.ceil(eta));
     }
   } finally {
     video.removeAttribute('src');
@@ -171,7 +172,7 @@ export async function exportMp4(
 ): Promise<Blob> {
   const { width, height, fps, start, end, bitrate } = opts;
   const vconfig = await pickVideoCodec(width, height, bitrate, fps);
-  onProgress(0, 'Аудио…');
+  onProgress(0, t('exp.audioStep'));
   const speed = Math.max(1, opts.speed || 1);
   const audio = opts.audio ? await decodeAudio(file, start, end, speed) : null;
 

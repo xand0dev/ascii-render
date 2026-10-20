@@ -102,18 +102,18 @@ export const DEFAULTS: Settings = {
 
 export const CHARSETS: Record<string, { label: string; chars: string }> = {
   detailed: {
-    label: 'Детальный (70 симв.)',
+    label: 'Detailed (70 glyphs)',
     chars: " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
   },
-  standard: { label: 'Классика', chars: ' .:-=+*#%@' },
-  letters: { label: 'Буквы', chars: ' .,:;ilcvunxzjftrXYUJCLQ0OZmwqpdbkhaoMW' },
-  blocks: { label: 'Блоки', chars: ' ░▒▓█' },
-  binary: { label: 'Бинарный', chars: ' 01' },
-  dots: { label: 'Точки', chars: ' .·:•●' },
-  braille: { label: 'Брайль', chars: ' ⠁⠃⠇⠏⠟⠿⡿⣿' },
-  geo: { label: 'Геометрия', chars: ' .-+x*#▪■' },
-  katakana: { label: 'Матрица (катакана)', chars: ' ｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉ012345' },
-  custom: { label: 'Свой набор', chars: '' },
+  standard: { label: 'Classic', chars: ' .:-=+*#%@' },
+  letters: { label: 'Letters', chars: ' .,:;ilcvunxzjftrXYUJCLQ0OZmwqpdbkhaoMW' },
+  blocks: { label: 'Blocks', chars: ' ░▒▓█' },
+  binary: { label: 'Binary', chars: ' 01' },
+  dots: { label: 'Dots', chars: ' .·:•●' },
+  braille: { label: 'Braille', chars: ' ⠁⠃⠇⠏⠟⠿⡿⣿' },
+  geo: { label: 'Geometry', chars: ' .-+x*#▪■' },
+  katakana: { label: 'Matrix (katakana)', chars: ' ｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉ012345' },
+  custom: { label: 'Custom', chars: '' },
 };
 
 // Per-glyph fallback for katakana / box-drawing / braille when the main font lacks them (matters in Node/Skia).
@@ -125,7 +125,7 @@ export const FONTS: Record<string, { label: string; family: string }> = {
   space: { label: 'Space Mono', family: `"Space Mono", Menlo, ${GLYPH_FALLBACK}` },
   fira: { label: 'Fira Code', family: `"Fira Code", Menlo, ${GLYPH_FALLBACK}` },
   courier: { label: 'Courier', family: `"Courier Prime", "Courier New", ${GLYPH_FALLBACK}` },
-  vt323: { label: 'VT323 пиксель', family: `VT323, Menlo, ${GLYPH_FALLBACK}` },
+  vt323: { label: 'VT323 pixel', family: `VT323, Menlo, ${GLYPH_FALLBACK}` },
 };
 
 export const FONT_FAMILY = FONTS.jetbrains.family;

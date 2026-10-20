@@ -635,3 +635,7 @@ kbd {
 .warn-line { color: var(--accent-2) !important; font-size: 11px !important; justify-content: flex-start !important; line-height: 1.4; }
 .dlg-side { overflow-y: auto; max-height: 460px; }
 #animSec .switch { margin-bottom: 12px; }
+
+/* ───────── language switch ───────── */
+.lang-seg { margin-right: 6px; }
+.lang-seg button { height: 24px; padding: 0 9px; font: 700 10.5px var(--mono); letter-spacing: .06em; }

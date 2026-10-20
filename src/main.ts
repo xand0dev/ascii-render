@@ -1,6 +1,7 @@
 import './style.css';
 import { AsciiRenderer, DEFAULTS, FONT_FAMILY, fontFamily, type Settings } from './ascii';
 import { cropFor, resolveLook } from './looks';
+import { LANGS, lang, setLang, t, translateDom, tryT, type Lang } from './i18n';
 import { exportGif, exportMp4, type CompareMode, type Crop } from './export';
 import { buildEnvelope, detectBeats, sampleEnvelope, type Envelope } from './audio';
 import { BUILTIN_PRESETS, randomSettings, type Preset } from './presets';
@@ -13,6 +14,7 @@ import { Viewer, type ViewMode } from './ui/viewer';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 hydrateIcons();
+translateDom();
 
 // ───────── state ─────────
 const SETTINGS_KEY = 'ascii-render-settings';
@@ -97,7 +99,7 @@ function stepHistory(dir: -1 | 1) {
   history.idx = next;
   settings = JSON.parse(history.stack[next]);
   applySettings(false);
-  toast(dir < 0 ? 'Отменено' : 'Повторено', 'info', 1200);
+  toast(t(dir < 0 ? 'toast.undo' : 'toast.redo'), 'info', 1200);
 }
 function syncHistoryButtons() {
   $<HTMLButtonElement>('undoBtn').disabled = history.idx <= 0;
@@ -106,7 +108,7 @@ function syncHistoryButtons() {
 
 // ───────── controls ─────────
 let replayTimer = 0;
-const controls = new Controls($('controls'), (key, value) => {
+function onControlChange(key: keyof Settings, value: unknown) {
   (settings as unknown as Record<string, unknown>)[key] = value;
   applySettings();
   // show the intro right away while tuning it
@@ -119,9 +121,10 @@ const controls = new Controls($('controls'), (key, value) => {
   }
   if (key === 'font') ensureFont(settings).then(() => { requestRender(); renderPresetThumbs(); });
   if (key === 'audioReact' && Number(value) > 0 && source === 'file' && !envelope) {
-    toast('В этом видео нет звука, реагировать не на что', 'info', 2500);
+    toast(t('toast.noAudio'), 'info', 2500);
   }
-});
+}
+let controls = new Controls($('controls'), onControlChange);
 
 function applySettings(record = true) {
   controls.sync(settings);
@@ -150,11 +153,12 @@ function syncPresetsMore() {
   const hiddenCount = Math.max(0, list.length - PRESETS_VISIBLE);
   presetsMore.hidden = hiddenCount === 0;
   if (presetsOpen) {
-    presetsMore.innerHTML = `<span>Свернуть</span>${icon('chevron', 14)}`;
+    presetsMore.innerHTML = `<span>${t('presets.collapse')}</span>${icon('chevron', 14)}`;
   } else {
     const active = presetsEl.querySelector<HTMLElement>('.preset.extra.on');
-    const name = active ? list.find((p) => p.id === active.dataset.id)?.name : '';
-    presetsMore.innerHTML = `<span>Все пресеты</span><em>+${hiddenCount}</em>${name ? `<i class="pm-active">● ${name}</i>` : ''}${icon('chevron', 14)}`;
+    const found = active ? list.find((p) => p.id === active.dataset.id) : undefined;
+    const name = found ? presetName(found) : '';
+    presetsMore.innerHTML = `<span>${t('presets.all')}</span><em>+${hiddenCount}</em>${name ? `<i class="pm-active">● ${name}</i>` : ''}${icon('chevron', 14)}`;
   }
   presetsMore.classList.toggle('open', presetsOpen);
 }
@@ -162,6 +166,11 @@ const presetThumbs = new Map<string, HTMLCanvasElement>();
 
 function allPresets(): Preset[] {
   return [...BUILTIN_PRESETS, ...userPresets];
+}
+
+/** Built-in presets are translated by id; user presets keep the name they were given. */
+function presetName(p: Preset) {
+  return p.user ? p.name : tryT(`preset.${p.id}`, p.name);
 }
 
 function buildPresets() {
@@ -173,14 +182,14 @@ function buildPresets() {
     card.className = index >= PRESETS_VISIBLE ? 'preset extra' : 'preset';
     card.style.setProperty('--i', String(Math.max(0, index - PRESETS_VISIBLE)));
     card.dataset.id = p.id;
-    card.innerHTML = `<canvas></canvas><span class="p-name"></span>${p.user ? `<span class="p-del" title="Удалить">${icon('x', 12)}</span>` : ''}`;
-    card.querySelector('.p-name')!.textContent = p.name;
+    card.innerHTML = `<canvas></canvas><span class="p-name"></span>${p.user ? `<span class="p-del" title="${t('presets.delete')}">${icon('x', 12)}</span>` : ''}`;
+    card.querySelector('.p-name')!.textContent = presetName(p);
     card.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('.p-del')) {
         userPresets = userPresets.filter((u) => u.id !== p.id);
         save(USER_PRESETS_KEY, userPresets);
         buildPresets();
-        toast(`Пресет «${p.name}» удалён`);
+        toast(t('toast.presetDeleted', { name: p.name }));
         return;
       }
       settings = { ...DEFAULTS, ...p.s };
@@ -265,13 +274,13 @@ $('savePresetBtn').addEventListener('click', () => {
 $<HTMLFormElement>('savePresetForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const input = $<HTMLInputElement>('presetName');
-  const name = input.value.trim() || `Мой стиль ${userPresets.length + 1}`;
+  const name = input.value.trim() || t('presets.myStyle', { n: userPresets.length + 1 });
   userPresets.push({ id: `u${Date.now()}`, name, s: { ...settings }, user: true });
   save(USER_PRESETS_KEY, userPresets);
   input.value = '';
   $('savePresetForm').hidden = true;
   buildPresets();
-  toast(`Пресет «${name}» сохранён`, 'ok');
+  toast(t('toast.presetSaved', { name }), 'ok');
 });
 $('randomBtn').addEventListener('click', randomize);
 function randomize() {
@@ -285,7 +294,7 @@ function randomize() {
 $('resetBtn').addEventListener('click', () => {
   settings = { ...DEFAULTS };
   applySettings();
-  toast('Настройки сброшены');
+  toast(t('toast.reset'));
 });
 
 // ───────── rendering ─────────
@@ -333,7 +342,7 @@ function requestRender() {
 let avgMs = 0;
 function renderNow() {
   if (source === 'none' || !video.videoWidth || video.readyState < 2) return;
-  const t = performance.now();
+  const t0 = performance.now();
   const crop = cropRect();
   const fx = source === 'camera'
     ? { time: (performance.now() - camStart) / 1000, audio: 0, crop }
@@ -341,12 +350,12 @@ function renderNow() {
   const look = source === 'file' ? lookAt(video.currentTime) : settings;
   renderer.render(video, video.videoWidth, video.videoHeight, look, source === 'camera', fx);
   updateMeter(fx.audio);
-  const dt = performance.now() - t;
+  const dt = performance.now() - t0;
   avgMs = avgMs ? avgMs * 0.85 + dt * 0.15 : dt;
   const cols = Math.round(look.columns);
   const rows = Math.max(1, Math.round(canvas.height / ((canvas.width / cols) * look.cellAspect)));
-  $('statGrid').textContent = `${cols}×${rows} симв.`;
-  $('statMs').textContent = `${avgMs.toFixed(1)} мс`;
+  $('statGrid').textContent = `${cols}×${rows} ${t('hud.glyphs')}`;
+  $('statMs').textContent = `${avgMs.toFixed(1)} ${t('u.ms')}`;
   $('statMs').classList.toggle('warn', avgMs > 33);
 }
 
@@ -456,7 +465,7 @@ const loopBtn = $('loopBtn');
 function toggleLoop() {
   loop = !loop;
   loopBtn.classList.toggle('on', loop);
-  toast(loop ? 'Зацикливание включено' : 'Зацикливание выключено', 'info', 1200);
+  toast(t(loop ? 'toast.loopOn' : 'toast.loopOff'), 'info', 1200);
 }
 loopBtn.addEventListener('click', toggleLoop);
 
@@ -486,7 +495,7 @@ function setSpeed(v: number, announce = false) {
   });
   timeline.onTrim?.(timeline.inPoint, timeline.outPoint);
   if (dlg.open) updateSummary();
-  if (announce) toast(`Скорость ${speed}×`, 'info', 1000);
+  if (announce) toast(t('toast.speed', { s: speed }), 'info', 1000);
 }
 speedRange.addEventListener('input', () => setSpeed(Number(speedRange.value)));
 $('speedBtn').addEventListener('click', (e) => {
@@ -513,7 +522,8 @@ timeline.onScrubEnd = () => { if (wasPlaying) video.play(); };
 timeline.onTrim = (a, b) => {
   $('inBtn').textContent = fmtTime(a);
   $('outBtn').textContent = fmtTime(b);
-  $('trimLen').textContent = speed > 1 ? `${(b - a).toFixed(2)} с → ${((b - a) / speed).toFixed(2)} с` : `${(b - a).toFixed(2)} с`;
+  const s = t('u.s');
+  $('trimLen').textContent = speed > 1 ? `${(b - a).toFixed(2)} ${s} → ${((b - a) / speed).toFixed(2)} ${s}` : `${(b - a).toFixed(2)} ${s}`;
 };
 $('inBtn').addEventListener('click', () => timeline.setTrim(video.currentTime, timeline.outPoint));
 $('outBtn').addEventListener('click', () => timeline.setTrim(timeline.inPoint, video.currentTime));
@@ -546,10 +556,10 @@ async function copyAsText() {
   try {
     await navigator.clipboard.writeText(txt);
     const { cols, rows } = renderer.lastGrid;
-    toast(`Скопировано: ${cols}×${rows} символов, вставляй куда угодно`, 'ok');
+    toast(t('toast.copied', { cols, rows }), 'ok');
   } catch {
     download(new Blob([txt], { type: 'text/plain' }), `${baseName()}_ascii.txt`);
-    toast('Буфер обмена недоступен, сохранил .txt', 'info');
+    toast(t('toast.clipboardTxt'), 'info');
   }
 }
 $('copyTxtBtn').addEventListener('click', copyAsText);
@@ -558,7 +568,7 @@ $('pngBtn').addEventListener('click', () => {
   canvas.toBlob((b) => {
     if (!b) return;
     download(b, `${baseName()}_ascii_${Math.round(video.currentTime * 100)}.png`);
-    toast('Кадр сохранён', 'ok');
+    toast(t('toast.frameSaved'), 'ok');
   }, 'image/png');
 });
 
@@ -585,7 +595,7 @@ function stopCamera() {
 
 function loadFile(file: File) {
   if (!file.type.startsWith('video/') && !/\.(mp4|mov|webm|mkv|m4v)$/i.test(file.name)) {
-    toast('Это не видеофайл', 'err');
+    toast(t('toast.notVideo'), 'err');
     return;
   }
   stopCamera();
@@ -603,7 +613,7 @@ function loadFile(file: File) {
   $('fileMeta').textContent = '';
   setSourceUI();
   viewer.fit();
-  toast(`Загружено: ${file.name}`, 'ok');
+  toast(t('toast.loaded', { name: file.name }), 'ok');
 }
 
 async function startCamera() {
@@ -622,13 +632,13 @@ async function startCamera() {
     camStart = performance.now();
     video.srcObject = stream;
     timeline.clear();
-    $('fileName').textContent = 'Камера';
-    $('fileMeta').textContent = 'в реальном времени';
+    $('fileName').textContent = t('cam.name');
+    $('fileMeta').textContent = t('cam.live');
     setSourceUI();
     viewer.fit();
     await video.play();
   } catch (err) {
-    toast(`Нет доступа к камере: ${(err as Error).message}`, 'err', 4000);
+    toast(t('toast.camError', { msg: (err as Error).message }), 'err', 4000);
   }
 }
 
@@ -655,7 +665,7 @@ async function loadDemo(at = 0) {
       else video.play().catch(() => {});
     }, { once: true });
   } catch {
-    toast('Демо-видео не найдено', 'err');
+    toast(t('toast.demoMissing'), 'err');
   }
 }
 $('heroDemo').addEventListener('click', () => loadDemo());
@@ -696,11 +706,11 @@ $('recBtn').addEventListener('click', () => {
   recorder.onstop = () => {
     clearInterval(recTimer);
     $('recBtn').classList.remove('on');
-    $('recLabel').textContent = 'Запись';
+    $('recLabel').textContent = t('rec.label');
     const type = recorder?.mimeType || 'video/webm';
     const blob = new Blob(chunks, { type });
     download(blob, `camera_ascii_${Date.now()}.${type.includes('mp4') ? 'mp4' : 'webm'}`);
-    toast(`Запись сохранена · ${(blob.size / 1e6).toFixed(1)} МБ`, 'ok');
+    toast(t('toast.recSaved', { mb: (blob.size / 1e6).toFixed(1) }), 'ok');
   };
   recorder.start(250);
   recStart = performance.now();
@@ -730,9 +740,9 @@ function setDlgState(state: 'config' | 'running' | 'done') {
   dlg.classList.toggle('fmt-gif', exportOpts.format === 'gif');
   const go = $<HTMLButtonElement>('dlgGo');
   const cancel = $<HTMLButtonElement>('dlgCancel');
-  if (state === 'config') { go.hidden = false; go.innerHTML = `${icon('zap')}Рендерить`; cancel.textContent = 'Отмена'; }
-  if (state === 'running') { go.hidden = true; cancel.textContent = 'Остановить'; }
-  if (state === 'done') { go.hidden = false; go.innerHTML = `${icon('download')}Скачать ${gifDone ? 'GIF' : 'MP4'}`; cancel.textContent = 'Закрыть'; }
+  if (state === 'config') { go.hidden = false; go.innerHTML = `${icon('zap')}${t('exp.go')}`; cancel.textContent = t('exp.cancel'); }
+  if (state === 'running') { go.hidden = true; cancel.textContent = t('exp.stop'); }
+  if (state === 'done') { go.hidden = false; go.innerHTML = `${icon('download')}${t('exp.download', { fmt: gifDone ? 'GIF' : 'MP4' })}`; cancel.textContent = t('exp.close'); }
   if (state !== 'running') document.title = baseTitle;
 }
 
@@ -794,24 +804,25 @@ function exportParams() {
 function updateSummary() {
   const p = exportParams();
   const frames = Math.round(p.dur * p.fps);
+  const sec = t('u.s');
   const sizeMb = p.gif
     ? (p.width * p.height * frames * 0.32) / 1e6
     : ((p.bitrate + (exportOpts.audio ? 192000 : 0)) * p.dur) / 8 / 1e6;
   const extras = [
-    exportOpts.aspect !== 'source' ? `формат ${exportOpts.aspect}` : '',
-    exportOpts.compare === 'wipe' ? 'до/после' : '',
-    beatSync.on && beats.length ? 'смена в такт' : '',
+    exportOpts.aspect !== 'source' ? t('sum.fmt', { a: exportOpts.aspect }) : '',
+    exportOpts.compare === 'wipe' ? t('sum.beforeAfter') : '',
+    beatSync.on && beats.length ? t('sum.beat') : '',
     anim.on && anim.a && anim.b ? 'A → B' : '',
   ].filter(Boolean).join(' · ');
   $('summary').innerHTML = `
-    <div><span>Размер кадра</span><b>${p.width}×${p.height}${p.gif ? ' · GIF' : ''}</b></div>
-    ${extras ? `<div><span>Особое</span><b class="hl">${extras}</b></div>` : ''}
-    <div><span>Фрагмент</span><b>${fmtTime(p.start)} → ${fmtTime(p.end)}</b></div>
-    ${p.speed > 1 ? `<div><span>Ускорение</span><b class="hl">${p.speed}× · ${p.srcDur.toFixed(2)} с → ${p.dur.toFixed(2)} с</b></div>` : ''}
-    <div><span>Длительность</span><b>${p.dur.toFixed(2)} с · ${Math.round(p.dur * p.fps)} кадров</b></div>
-    ${p.gif ? '' : `<div><span>Битрейт</span><b>${(p.bitrate / 1e6).toFixed(1)} Мбит/с</b></div>`}
-    <div class="big"><span>${p.gif ? 'Файл ≈' : 'Файл, не более'}</span><b>${sizeMb < 1 ? sizeMb.toFixed(2) : sizeMb.toFixed(1)} МБ</b></div>
-    ${p.gif && sizeMb > 25 ? '<div class="warn-line">GIF выйдет тяжёлым: укороти фрагмент, уменьши ширину или fps</div>' : ''}`;
+    <div><span>${t('sum.size')}</span><b>${p.width}×${p.height}${p.gif ? ' · GIF' : ''}</b></div>
+    ${extras ? `<div><span>${t('sum.extras')}</span><b class="hl">${extras}</b></div>` : ''}
+    <div><span>${t('sum.range')}</span><b>${fmtTime(p.start)} → ${fmtTime(p.end)}</b></div>
+    ${p.speed > 1 ? `<div><span>${t('sum.speed')}</span><b class="hl">${p.speed}× · ${p.srcDur.toFixed(2)} ${sec} → ${p.dur.toFixed(2)} ${sec}</b></div>` : ''}
+    <div><span>${t('sum.duration')}</span><b>${p.dur.toFixed(2)} ${sec} · ${Math.round(p.dur * p.fps)} ${t('sum.frames')}</b></div>
+    ${p.gif ? '' : `<div><span>${t('sum.bitrate')}</span><b>${(p.bitrate / 1e6).toFixed(1)} ${t('u.mbps')}</b></div>`}
+    <div class="big"><span>${t(p.gif ? 'sum.fileApprox' : 'sum.fileMax')}</span><b>${sizeMb < 1 ? sizeMb.toFixed(2) : sizeMb.toFixed(1)} ${t('u.mb')}</b></div>
+    ${p.gif && sizeMb > 25 ? `<div class="warn-line">${t('sum.gifHeavy')}</div>` : ''}`;
 }
 
 function drawPreview(src: CanvasImageSource, w: number, h: number) {
@@ -842,9 +853,9 @@ function openExport() {
 async function runExport() {
   if (!currentFile) return;
   const p = exportParams();
-  if (p.dur <= 0) { toast('Пустой фрагмент', 'err'); return; }
+  if (p.dur <= 0) { toast(t('toast.emptyClip'), 'err'); return; }
   if (!p.gif && typeof VideoEncoder === 'undefined') {
-    toast('MP4 требует WebCodecs: открой в Chrome, Edge или Arc, или выбери GIF', 'err', 5000);
+    toast(t('toast.needWebCodecs'), 'err', 5000);
     return;
   }
   // make sure every font that can appear is loaded before the first frame
@@ -866,14 +877,13 @@ async function runExport() {
       crop: cropRect(), compare: exportOpts.compare,
       settingsAt: (beatSync.on && beats.length) || (anim.on && anim.a && anim.b) ? lookAt : undefined,
     };
-    const onProg = (prog: number, label: string) => {
-      document.title = `${Math.floor(prog * 100)}% · рендер · ASCII Render`;
+    const onProg = (prog: number, label: string, eta?: number) => {
+      document.title = t('title.rendering', { p: Math.floor(prog * 100) });
       $('ringPct').textContent = `${Math.floor(prog * 100)}%`;
       ringFg.style.strokeDashoffset = `${C * (1 - prog)}`;
       $('runBar').style.width = `${prog * 100}%`;
       $('runLabel').textContent = label;
-      const m = label.match(/~(\d+)с/);
-      $('ringEta').textContent = m ? `~${m[1]} с` : '';
+      $('ringEta').textContent = eta !== undefined ? `~${eta} ${t('u.s')}` : '';
     };
     const onFrame = (c: HTMLCanvasElement, i: number) => { if (i % 2 === 0) drawPreview(c, c.width, c.height); };
     const blob = p.gif
@@ -885,17 +895,17 @@ async function runExport() {
     if (p.gif) $<HTMLImageElement>('resultImg').src = resultUrl;
     else resultVideo.src = resultUrl;
     const secs = ((performance.now() - t0) / 1000).toFixed(1);
-    $('doneLabel').textContent = `${(blob.size / 1e6).toFixed(1)} МБ · ${p.width}×${p.height} · ${p.fps} fps${p.speed > 1 ? ` · ${p.speed}×` : ''} · рендер ${secs} с`;
+    $('doneLabel').textContent = `${(blob.size / 1e6).toFixed(1)} ${t('u.mb')} · ${p.width}×${p.height} · ${p.fps} fps${p.speed > 1 ? ` · ${p.speed}×` : ''} · ${t('exp.renderTime', { s: secs })}`;
     setDlgState('done');
-    document.title = `✓ Готово · ASCII Render`;
+    document.title = t('title.done');
     if (!p.gif) resultVideo.play().catch(() => {});
   } catch (err) {
     if ((err as Error).name === 'AbortError') {
-      toast('Экспорт остановлен');
+      toast(t('toast.exportStopped'));
       setDlgState('config');
     } else {
       console.error(err);
-      toast(`Ошибка экспорта: ${(err as Error).message}`, 'err', 6000);
+      toast(t('toast.exportError', { msg: (err as Error).message }), 'err', 6000);
       setDlgState('config');
     }
   } finally {
@@ -908,7 +918,7 @@ $('dlgGo').addEventListener('click', () => {
   if (dlg.dataset.state === 'done' && resultBlob) {
     const ext = resultBlob.type === 'image/gif' ? 'gif' : 'mp4';
     download(resultBlob, `${baseName()}_ascii${speed > 1 ? `_${speed}x` : ''}.${ext}`);
-    toast('Скачивание началось', 'ok');
+    toast(t('toast.downloading'), 'ok');
   } else runExport();
 });
 const closeDlg = () => {
@@ -978,7 +988,7 @@ function setAspect(a: string, announce = true) {
   applySize();
   viewer.fit();
   if (dlg.open) updateSummary();
-  if (announce) toast(a === 'source' ? 'Исходный формат кадра' : `Формат кадра ${a}`, 'info', 1200);
+  if (announce) toast(a === 'source' ? t('toast.aspectSource') : t('toast.aspect', { a }), 'info', 1200);
 }
 aspectSeg.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('button');
@@ -1011,17 +1021,17 @@ $('shareBtn').addEventListener('click', async () => {
   const url = `${location.origin}${location.pathname}#style=${b64url.enc(JSON.stringify(styleDiff(settings)))}`;
   try {
     await navigator.clipboard.writeText(url);
-    toast('Ссылка на стиль скопирована: открой её, и стиль применится', 'ok', 3200);
+    toast(t('toast.linkCopied'), 'ok', 3200);
   } catch {
-    prompt('Скопируй ссылку на стиль:', url);
+    prompt(t('prompt.copyLink'), url);
   }
 });
 $('jsonBtn').addEventListener('click', () => {
   const active = allPresets().find((p) => presetsEl.querySelector(`.preset.on[data-id="${p.id}"]`));
-  const name = active?.name ?? 'Мой стиль';
+  const name = active ? presetName(active) : t('presets.myStyle', { n: '' }).trim();
   const data = { app: 'ascii-render', v: 1, name, settings: styleDiff(settings) };
-  download(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `${name.replace(/[^\wа-яё-]+/gi, '_')}.ascii-style.json`);
-  toast('Стиль сохранён в .json', 'ok');
+  download(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `${name.replace(/[^\p{L}\p{N}-]+/gu, '_')}.ascii-style.json`);
+  toast(t('toast.jsonSaved'), 'ok');
 });
 const importInput = document.createElement('input');
 importInput.type = 'file';
@@ -1032,16 +1042,16 @@ async function importStyle(file: File) {
   try {
     const data = JSON.parse(await file.text());
     const s = sanitize(data.settings ?? data.s ?? data);
-    if (!Object.keys(s).length && !data.settings) throw new Error('нет настроек');
+    if (!Object.keys(s).length && !data.settings) throw new Error(t('err.noSettings'));
     const name = String(data.name || file.name.replace(/\.(ascii-style\.)?json$/i, '')).slice(0, 24);
     userPresets.push({ id: `u${Date.now()}`, name, s: { ...DEFAULTS, ...s }, user: true });
     save(USER_PRESETS_KEY, userPresets);
     settings = { ...DEFAULTS, ...s };
     buildPresets();
     applySettings();
-    toast(`Стиль «${name}» импортирован`, 'ok');
+    toast(t('toast.imported', { name }), 'ok');
   } catch (err) {
-    toast(`Не получилось прочитать стиль: ${(err as Error).message}`, 'err', 4000);
+    toast(t('toast.importError', { msg: (err as Error).message }), 'err', 4000);
   }
 }
 function applyStyleFromHash() {
@@ -1050,9 +1060,9 @@ function applyStyleFromHash() {
   try {
     settings = { ...DEFAULTS, ...sanitize(JSON.parse(b64url.dec(m[1]))) };
     applySettings();
-    toast('Стиль из ссылки применён', 'ok', 3000);
+    toast(t('toast.hashApplied'), 'ok', 3000);
   } catch {
-    toast('Ссылка на стиль повреждена', 'err');
+    toast(t('toast.hashBroken'), 'err');
   }
   window.history.replaceState(null, '', location.pathname + location.search);
 }
@@ -1071,7 +1081,7 @@ function syncAnimSlots() {
     const slot = $(k === 'a' ? 'slotA' : 'slotB');
     const look = anim[k];
     slot.classList.toggle('filled', !!look);
-    slot.querySelector('span')!.textContent = look ? 'задано' : 'пусто';
+    slot.querySelector('span')!.textContent = t(look ? 'anim.set' : 'anim.empty');
     const c = slot.querySelector('canvas')!;
     if (look) drawThumb(c, look, 200, 124);
     else c.getContext('2d')?.clearRect(0, 0, c.width, c.height);
@@ -1086,15 +1096,15 @@ for (const k of ['a', 'b'] as const) {
     if (anim.a && anim.b && !anim[k === 'a' ? 'b' : 'a']) anim.on = false;
     saveAnim();
     syncAnimSlots();
-    toast(`Текущий стиль записан в ${k.toUpperCase()}`, 'ok', 1500);
-    if (anim.a && anim.b && !anim.on) toast('A и B заданы: включи «Анимировать по фрагменту»', 'info', 2600);
+    toast(t('toast.slotSaved', { k: k.toUpperCase() }), 'ok', 1500);
+    if (anim.a && anim.b && !anim.on) toast(t('toast.abReady'), 'info', 2600);
   });
   $(k === 'a' ? 'slotA' : 'slotB').addEventListener('click', () => {
     const look = anim[k];
     if (!look) return;
     settings = { ...look };
     applySettings();
-    toast(`${k.toUpperCase()} загружен в редактор`, 'info', 1200);
+    toast(t('toast.slotLoaded', { k: k.toUpperCase() }), 'info', 1200);
   });
 }
 $<HTMLInputElement>('animOn').addEventListener('change', (e) => {
@@ -1121,7 +1131,7 @@ function syncBeatUI() {
   chipsEl.innerHTML = '';
   for (const p of allPresets()) {
     const b = document.createElement('button');
-    b.textContent = p.name;
+    b.textContent = presetName(p);
     b.classList.toggle('on', beatSync.ids.includes(p.id));
     b.addEventListener('click', () => {
       beatSync.ids = beatSync.ids.includes(p.id) ? beatSync.ids.filter((x) => x !== p.id) : [...beatSync.ids, p.id];
@@ -1132,9 +1142,9 @@ function syncBeatUI() {
     chipsEl.appendChild(b);
   }
   const info = $('beatInfo');
-  if (source !== 'file') info.textContent = 'Загрузи видео со звуком.';
-  else if (!envelope) info.textContent = 'Анализирую звук… (или в видео нет звука)';
-  else info.innerHTML = `Найдено <b>${beats.length}</b> битов · выбрано стилей: <b>${beatSync.ids.length}</b>`;
+  if (source !== 'file') info.textContent = t('beat.needVideo');
+  else if (!envelope) info.textContent = t('beat.analysing');
+  else info.innerHTML = t('beat.info', { beats: beats.length, styles: beatSync.ids.length });
   timeline.setMarkers(beatSync.on ? beats : []);
 }
 $<HTMLInputElement>('beatOn').addEventListener('change', (e) => {
@@ -1143,7 +1153,7 @@ $<HTMLInputElement>('beatOn').addEventListener('change', (e) => {
   save(BEAT_KEY, beatSync);
   syncBeatUI();
   requestRender();
-  if (beatSync.on && !envelope) toast('Нужно видео со звуком', 'info');
+  if (beatSync.on && !envelope) toast(t('toast.needAudio'), 'info');
   else if (beatSync.on && source === 'file' && video.paused) video.play();
 });
 $<HTMLInputElement>('beatSens').addEventListener('input', (e) => {
@@ -1151,6 +1161,42 @@ $<HTMLInputElement>('beatSens').addEventListener('input', (e) => {
   save(BEAT_KEY, beatSync);
   refreshBeats();
 });
+
+// ───────── language ─────────
+const langSeg = $('langSeg');
+langSeg.innerHTML = LANGS.map((l) => `<button data-lang="${l.id}" title="${l.name}">${l.short}</button>`).join('');
+langSeg.addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+  if (!b?.dataset.lang || b.dataset.lang === lang()) return;
+  setLang(b.dataset.lang as Lang);
+  applyLanguage();
+});
+function syncLangSeg() {
+  langSeg.querySelectorAll<HTMLElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang()));
+}
+
+/** Re-translate everything in place — the loaded video, settings and history stay as they are. */
+function applyLanguage() {
+  translateDom();
+  syncLangSeg();
+  const controlsEl = $('controls');
+  controlsEl.innerHTML = '';
+  controls = new Controls(controlsEl, onControlChange);
+  controls.sync(settings);
+  buildPresets();
+  syncAnimSlots();
+  if (source === 'camera') {
+    $('fileName').textContent = t('cam.name');
+    $('fileMeta').textContent = t('cam.live');
+  }
+  if (!$('recBtn').classList.contains('on')) $('recLabel').textContent = t('rec.label');
+  timeline.onTrim?.(timeline.inPoint, timeline.outPoint);
+  if (dlg.open) {
+    setDlgState((dlg.dataset.state as 'config' | 'running' | 'done') ?? 'config');
+    updateSummary();
+  }
+  requestRender();
+}
 
 // ───────── init ─────────
 controls.sync(settings);
@@ -1160,6 +1206,8 @@ setSourceUI();
 viewer.setMode('ascii');
 setSpeed(1);
 setAspect(exportOpts.aspect, false);
+syncLangSeg();
+$('recLabel').textContent = t('rec.label');
 syncAnimSlots();
 syncBeatUI();
 applyStyleFromHash();

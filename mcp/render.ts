@@ -34,7 +34,7 @@ export function buildLook(preset?: string, overrides?: unknown): Settings {
   let base: Settings = { ...DEFAULTS, ...BUILTIN_PRESETS[0].s };
   if (preset) {
     const p = findPreset(preset);
-    if (!p) throw new Error(`Нет пресета «${preset}». Доступные: ${BUILTIN_PRESETS.map((x) => x.id).join(', ')}`);
+    if (!p) throw new Error(`Unknown preset "${preset}". Available: ${BUILTIN_PRESETS.map((x) => x.id).join(', ')}`);
     base = { ...DEFAULTS, ...p.s };
   }
   return { ...base, ...sanitize(overrides) };
@@ -96,7 +96,7 @@ export async function renderFrame(job: FrameJob) {
   const next = frameReader(proc, W * H * 4);
   const raw = await next();
   await done;
-  if (!raw) throw new Error('Не удалось прочитать кадр');
+  if (!raw) throw new Error('Could not read the frame');
 
   const src = createCanvas(W, H);
   src.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(raw.buffer, raw.byteOffset, raw.byteLength), W, H), 0, 0);

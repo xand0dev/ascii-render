@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,19 +26,20 @@
         </div>
         <div class="spacer"></div>
         <div class="seg view-seg" id="viewSeg">
-          <button data-mode="ascii" class="on" data-icon="ascii" title="Только ASCII (C)">ASCII</button>
-          <button data-mode="compare" data-icon="compare" title="Шторка до/после (C)">Сравнить</button>
+          <button data-mode="ascii" class="on" data-icon="ascii" data-i18n-title="view.ascii.title">ASCII</button>
+          <button data-mode="compare" data-icon="compare" data-i18n-title="view.compare.title"><span data-i18n="view.compare">Compare</span></button>
         </div>
         <div class="spacer"></div>
         <div class="tb-group">
-          <button class="icon-btn" id="undoBtn" data-icon="undo" title="Отменить (⌘Z)"></button>
-          <button class="icon-btn" id="redoBtn" data-icon="redo" title="Повторить (⇧⌘Z)"></button>
-          <button class="icon-btn" id="helpBtn" data-icon="keyboard" title="Горячие клавиши (?)"></button>
+          <div class="seg lang-seg" id="langSeg" data-i18n-title="tb.lang"></div>
+          <button class="icon-btn" id="undoBtn" data-icon="undo" data-i18n-title="tb.undo"></button>
+          <button class="icon-btn" id="redoBtn" data-icon="redo" data-i18n-title="tb.redo"></button>
+          <button class="icon-btn" id="helpBtn" data-icon="keyboard" data-i18n-title="tb.help"></button>
         </div>
         <div class="tb-group">
-          <button class="btn ghost" id="openBtn" data-icon="upload">Открыть</button>
-          <button class="btn ghost" id="camBtn" data-icon="camera">Камера</button>
-          <button class="btn primary glow" id="exportBtn" data-icon="download" disabled>Экспорт</button>
+          <button class="btn ghost" id="openBtn" data-icon="upload"><span data-i18n="tb.open">Open</span></button>
+          <button class="btn ghost" id="camBtn" data-icon="camera"><span data-i18n="tb.camera">Camera</span></button>
+          <button class="btn primary glow" id="exportBtn" data-icon="download" disabled><span data-i18n="tb.export">Export</span></button>
         </div>
         <input type="file" id="file" accept="video/*" hidden />
       </header>
@@ -47,51 +48,51 @@
       <aside class="sidebar">
         <div class="presets-block">
           <div class="block-head">
-            <span data-icon="layers" data-size="14">Пресеты</span>
+            <span data-icon="layers" data-size="14"><span data-i18n="presets.title">Presets</span></span>
             <div class="block-actions">
-              <button class="icon-btn sm" id="randomBtn" data-icon="dice" title="Случайный стиль (R)"></button>
-              <button class="icon-btn sm" id="shareBtn" data-icon="link" title="Скопировать ссылку на этот стиль"></button>
-              <button class="icon-btn sm" id="jsonBtn" data-icon="braces" title="Сохранить стиль в .json"></button>
-              <button class="icon-btn sm" id="importBtn" data-icon="folder" title="Импорт стиля из .json"></button>
-              <button class="icon-btn sm" id="savePresetBtn" data-icon="plus" title="Сохранить текущие настройки"></button>
+              <button class="icon-btn sm" id="randomBtn" data-icon="dice" data-i18n-title="presets.random"></button>
+              <button class="icon-btn sm" id="shareBtn" data-icon="link" data-i18n-title="presets.share"></button>
+              <button class="icon-btn sm" id="jsonBtn" data-icon="braces" data-i18n-title="presets.json"></button>
+              <button class="icon-btn sm" id="importBtn" data-icon="folder" data-i18n-title="presets.import"></button>
+              <button class="icon-btn sm" id="savePresetBtn" data-icon="plus" data-i18n-title="presets.add"></button>
             </div>
           </div>
           <form class="save-preset" id="savePresetForm" hidden>
-            <input id="presetName" type="text" placeholder="Название пресета" maxlength="24" autocomplete="off" />
-            <button class="btn primary sm" type="submit">Сохранить</button>
+            <input id="presetName" type="text" data-i18n-placeholder="presets.namePh" placeholder="Preset name" maxlength="24" autocomplete="off" />
+            <button class="btn primary sm" type="submit" data-i18n="presets.save">Save</button>
           </form>
           <div class="presets" id="presets"></div>
           <button class="presets-more" id="presetsMore"></button>
         </div>
         <div id="controls"></div>
         <section class="sec" id="animSec">
-          <button class="sec-head" id="animHead"><span class="sec-ic" data-icon="music" data-size="14"></span><span>Анимация и ритм<em class="badge">PRO</em></span><span class="sec-chev" data-icon="chevron" data-size="14"></span></button>
+          <button class="sec-head" id="animHead"><span class="sec-ic" data-icon="music" data-size="14"></span><span><span data-i18n="anim.title">Animation &amp; rhythm</span><em class="badge">PRO</em></span><span class="sec-chev" data-icon="chevron" data-size="14"></span></button>
           <div class="sec-body"><div class="sec-inner">
-            <div class="sub-title">🎚 Переход A → B</div>
+            <div class="sub-title" data-i18n="anim.ab">🎚 Transition A → B</div>
             <div class="ab">
-              <button class="ab-slot" id="slotA" title="Загрузить A в редактор"><canvas></canvas><b>A</b><span>пусто</span></button>
+              <button class="ab-slot" id="slotA" data-i18n-title="anim.loadSlot"><canvas></canvas><b>A</b><span data-i18n="anim.empty">empty</span></button>
               <div class="ab-arrow">→</div>
-              <button class="ab-slot" id="slotB" title="Загрузить B в редактор"><canvas></canvas><b>B</b><span>пусто</span></button>
+              <button class="ab-slot" id="slotB" data-i18n-title="anim.loadSlot"><canvas></canvas><b>B</b><span data-i18n="anim.empty">empty</span></button>
             </div>
             <div class="ab-actions">
-              <button class="btn ghost sm" id="setA">Текущие → A</button>
-              <button class="btn ghost sm" id="setB">Текущие → B</button>
+              <button class="btn ghost sm" id="setA" data-i18n="anim.toA">Current → A</button>
+              <button class="btn ghost sm" id="setB" data-i18n="anim.toB">Current → B</button>
             </div>
-            <label class="switch"><span class="ctl-label">Анимировать по фрагменту</span><input type="checkbox" id="animOn" /><i></i></label>
-            <p class="hint">Все параметры плавно перетекают от A в начале фрагмента к B в конце. Клик по слоту загружает его в редактор.</p>
+            <label class="switch"><span class="ctl-label" data-i18n="anim.on">Animate across the clip</span><input type="checkbox" id="animOn" /><i></i></label>
+            <p class="hint" data-i18n="anim.hint">Every parameter flows smoothly from A at the start of the clip to B at the end.</p>
 
-            <div class="sub-title">🥁 Смена стиля в такт</div>
-            <label class="switch"><span class="ctl-label">Переключать пресеты на битах</span><input type="checkbox" id="beatOn" /><i></i></label>
+            <div class="sub-title" data-i18n="beat.title">🥁 Switch style on the beat</div>
+            <label class="switch"><span class="ctl-label" data-i18n="beat.on">Switch presets on beats</span><input type="checkbox" id="beatOn" /><i></i></label>
             <div class="ctl ctl-range">
-              <div class="ctl-head"><span class="ctl-label">Чувствительность</span><span class="ctl-num" id="beatSensVal">0.50</span></div>
+              <div class="ctl-head"><span class="ctl-label" data-i18n="beat.sens">Sensitivity</span><span class="ctl-num" id="beatSensVal">0.50</span></div>
               <input type="range" id="beatSens" min="0" max="1" step="0.01" value="0.5" />
             </div>
             <div class="beat-chips" id="beatChips"></div>
-            <p class="hint" id="beatInfo">Загрузи видео со звуком.</p>
+            <p class="hint" id="beatInfo"></p>
           </div></div>
         </section>
         <div class="sidebar-foot">
-          <button class="btn ghost sm" id="resetBtn" data-icon="reset">Сбросить всё</button>
+          <button class="btn ghost sm" id="resetBtn" data-icon="reset"><span data-i18n="sidebar.reset">Reset everything</span></button>
         </div>
       </aside>
 
@@ -104,46 +105,46 @@
           <div class="wipe-handle" id="wipeHandle">
             <div class="wipe-line"></div>
             <div class="wipe-knob"><span>‹</span><span>›</span></div>
-            <div class="wipe-tag l">ОРИГИНАЛ</div>
+            <div class="wipe-tag l" data-i18n="wipe.original">ORIGINAL</div>
             <div class="wipe-tag r">ASCII</div>
           </div>
         </div>
 
         <div class="hud hud-tl" id="hudStats" hidden>
           <span class="live-dot" id="liveDot" hidden>LIVE</span>
-          <span class="meter" id="audioMeter" hidden title="Уровень баса"><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="meter" id="audioMeter" hidden data-i18n-title="hud.bass"><i></i><i></i><i></i><i></i><i></i></span>
           <span id="statGrid">—</span><span class="sep"></span><span id="statMs">—</span><span class="sep"></span><span id="statRes">—</span>
         </div>
         <div class="hud hud-tc" id="hudAspect" hidden>
           <span class="hud-ic" data-icon="crop" data-size="13"></span>
           <div class="seg mini" id="aspectSeg">
-            <button data-a="source">Ориг.</button><button data-a="9:16">9:16</button><button data-a="1:1">1:1</button><button data-a="4:5">4:5</button><button data-a="16:9">16:9</button>
+            <button data-a="source" data-i18n="aspect.source">Orig.</button><button data-a="9:16">9:16</button><button data-a="1:1">1:1</button><button data-a="4:5">4:5</button><button data-a="16:9">16:9</button>
           </div>
         </div>
         <div class="hud hud-tr" id="hudZoom" hidden>
-          <button class="icon-btn sm" id="zoomOut" data-icon="minus" title="Отдалить (−)"></button>
-          <button class="zoom-val" id="zoomVal" title="1:1 пиксель">100%</button>
-          <button class="icon-btn sm" id="zoomIn" data-icon="plus" title="Приблизить (+)"></button>
-          <button class="icon-btn sm" id="zoomFit" data-icon="fit" title="Вписать (0)"></button>
-          <button class="icon-btn sm" id="fullBtn" data-icon="maximize" title="Полный экран (F)"></button>
+          <button class="icon-btn sm" id="zoomOut" data-icon="minus" data-i18n-title="zoom.out"></button>
+          <button class="zoom-val" id="zoomVal" data-i18n-title="zoom.one">100%</button>
+          <button class="icon-btn sm" id="zoomIn" data-icon="plus" data-i18n-title="zoom.in"></button>
+          <button class="icon-btn sm" id="zoomFit" data-icon="fit" data-i18n-title="zoom.fit"></button>
+          <button class="icon-btn sm" id="fullBtn" data-icon="maximize" data-i18n-title="zoom.full"></button>
         </div>
         <div class="hud hud-bc" id="hudSnap" hidden>
-          <button class="btn ghost sm" id="pngBtn" data-icon="image">Кадр PNG</button>
-          <button class="btn ghost sm" id="copyTxtBtn" data-icon="type" title="Скопировать кадр как ASCII-текст (T)">Копировать текст</button>
+          <button class="btn ghost sm" id="pngBtn" data-icon="image"><span data-i18n="snap.png">PNG frame</span></button>
+          <button class="btn ghost sm" id="copyTxtBtn" data-icon="type" data-i18n-title="snap.text.title"><span data-i18n="snap.text">Copy as text</span></button>
         </div>
 
         <div class="hero" id="hero">
           <canvas id="heroCanvas"></canvas>
           <div class="hero-card">
             <div class="hero-badge">VIDEO → ASCII</div>
-            <h1>Преврати любое видео<br />в <span class="grad">живой ASCII</span></h1>
-            <p>Цветные символы, контуры, свечение. Экспорт в MP4 до 4K со звуком, всё прямо в браузере.</p>
+            <h1 data-i18n-html="hero.h1">Turn any video<br />into <span class="grad">living ASCII</span></h1>
+            <p data-i18n="hero.p">Colored glyphs, edges, glow. Export MP4 up to 4K with sound — all right in your browser.</p>
             <div class="hero-actions">
-              <button class="btn primary lg glow" id="heroOpen" data-icon="upload">Выбрать видео</button>
-              <button class="btn ghost lg" id="heroCam" data-icon="camera">Камера</button>
-              <button class="btn ghost lg" id="heroDemo" data-icon="film">Демо</button>
+              <button class="btn primary lg glow" id="heroOpen" data-icon="upload"><span data-i18n="hero.open">Choose a video</span></button>
+              <button class="btn ghost lg" id="heroCam" data-icon="camera"><span data-i18n="tb.camera">Camera</span></button>
+              <button class="btn ghost lg" id="heroDemo" data-icon="film"><span data-i18n="hero.demo">Demo</span></button>
             </div>
-            <div class="hero-hint">или перетащи файл сюда · MP4 · MOV · WebM</div>
+            <div class="hero-hint" data-i18n="hero.hint">or drop a file here · MP4 · MOV · WebM</div>
           </div>
         </div>
       </section>
@@ -151,30 +152,30 @@
       <!-- ───────── dock ───────── -->
       <footer class="dock" id="dock">
         <div class="transport">
-          <button class="icon-btn" id="stepBack" data-icon="stepBack" title="Кадр назад (←)"></button>
-          <button class="play-btn" id="playBtn" title="Пуск / пауза (Пробел)"></button>
-          <button class="icon-btn" id="stepFwd" data-icon="stepFwd" title="Кадр вперёд (→)"></button>
+          <button class="icon-btn" id="stepBack" data-icon="stepBack" data-i18n-title="tr.back"></button>
+          <button class="play-btn" id="playBtn" data-i18n-title="tr.play"></button>
+          <button class="icon-btn" id="stepFwd" data-icon="stepFwd" data-i18n-title="tr.fwd"></button>
           <div class="timecode"><span id="tcCur">00:00.00</span><span class="slash">/</span><span id="tcDur">00:00.00</span></div>
-          <button class="icon-btn toggle on" id="loopBtn" data-icon="repeat" title="Зацикливание (L)"></button>
+          <button class="icon-btn toggle on" id="loopBtn" data-icon="repeat" data-i18n-title="tr.loop"></button>
           <div class="speed" id="speed">
-            <button class="speed-btn" id="speedBtn" title="Ускорение ( [ / ] )"><span data-icon="zap" data-size="13"></span><b id="speedVal">1×</b></button>
+            <button class="speed-btn" id="speedBtn" data-i18n-title="tr.speed"><span data-icon="zap" data-size="13"></span><b id="speedVal">1×</b></button>
             <div class="speed-pop" id="speedPop" hidden>
-              <div class="speed-head"><span>Ускорение</span><b id="speedPopVal">1×</b></div>
+              <div class="speed-head"><span data-i18n="speed.title">Speed</span><b id="speedPopVal">1×</b></div>
               <input type="range" id="speedRange" min="1" max="15" step="1" value="1" />
               <div class="speed-scale"><span>1×</span><span>5×</span><span>10×</span><span>15×</span></div>
               <div class="speed-chips" id="speedChips"></div>
-              <div class="speed-note">Работает в превью и при экспорте: видео и звук ускоряются вместе</div>
+              <div class="speed-note" data-i18n="speed.note">Applies to the preview and the export: video and sound speed up together</div>
             </div>
           </div>
-          <button class="icon-btn" id="muteBtn" title="Звук (M)"></button>
-          <button class="rec-btn" id="recBtn" hidden><span class="rec-dot"></span><span id="recLabel">Запись</span></button>
+          <button class="icon-btn" id="muteBtn" data-i18n-title="tr.mute"></button>
+          <button class="rec-btn" id="recBtn" hidden><span class="rec-dot"></span><span id="recLabel">Record</span></button>
         </div>
         <div class="timeline" id="timeline"></div>
         <div class="trim-info">
           <span data-icon="scissors" data-size="13"></span>
-          <button class="trim-tc" id="inBtn" title="Поставить начало (I)">00:00.00</button>
+          <button class="trim-tc" id="inBtn" data-i18n-title="trim.in">00:00.00</button>
           <span class="arrow">→</span>
-          <button class="trim-tc" id="outBtn" title="Поставить конец (O)">00:00.00</button>
+          <button class="trim-tc" id="outBtn" data-i18n-title="trim.out">00:00.00</button>
           <span class="trim-len" id="trimLen"></span>
         </div>
       </footer>
@@ -183,14 +184,14 @@
     <!-- ───────── export dialog ───────── -->
     <dialog id="exportDlg" class="dlg">
       <div class="dlg-head">
-        <div class="dlg-title"><span data-icon="film" data-size="16"></span> Экспорт видео</div>
+        <div class="dlg-title"><span data-icon="film" data-size="16"></span> <span data-i18n="exp.title">Export video</span></div>
         <button class="icon-btn" id="dlgClose" data-icon="x"></button>
       </div>
       <div class="dlg-body">
         <div class="dlg-preview">
           <canvas id="exportPreview"></canvas>
           <video id="resultVideo" controls playsinline hidden></video>
-          <img id="resultImg" alt="Готовый GIF" hidden />
+          <img id="resultImg" data-i18n-alt="exp.gifAlt" alt="Finished GIF" hidden />
           <div class="ring" id="ring" hidden>
             <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg" /><circle cx="60" cy="60" r="52" class="ring-fg" id="ringFg" /></svg>
             <div class="ring-text"><b id="ringPct">0%</b><span id="ringEta"></span></div>
@@ -199,94 +200,94 @@
         <div class="dlg-side">
           <div class="dlg-state" data-state="config">
             <div class="opt">
-              <label>Формат</label>
-              <div class="seg full" id="optFormat"><button data-v="mp4">MP4 видео</button><button data-v="gif">GIF</button></div>
+              <label data-i18n="exp.format">Format</label>
+              <div class="seg full" id="optFormat"><button data-v="mp4" data-i18n="exp.mp4">MP4 video</button><button data-v="gif">GIF</button></div>
             </div>
             <div class="opt">
-              <label>Кадр</label>
-              <div class="seg full" id="optCompare"><button data-v="none">Только ASCII</button><button data-v="wipe">До / После</button></div>
+              <label data-i18n="exp.frame">Frame</label>
+              <div class="seg full" id="optCompare"><button data-v="none" data-i18n="exp.asciiOnly">ASCII only</button><button data-v="wipe" data-i18n="exp.beforeAfter">Before / After</button></div>
             </div>
             <div class="opt gif-only">
-              <label>Ширина GIF</label>
+              <label data-i18n="exp.gifWidth">GIF width</label>
               <div class="seg full" id="optGifW"><button data-v="320">320</button><button data-v="480">480</button><button data-v="640">640</button><button data-v="800">800</button></div>
             </div>
             <div class="opt gif-only">
-              <label>Кадров в секунду</label>
+              <label data-i18n="exp.fpsLong">Frames per second</label>
               <div class="seg full" id="optGifFps"><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button><button data-v="25">25</button></div>
             </div>
             <div class="opt mp4-only">
-              <label>Разрешение</label>
+              <label data-i18n="exp.res">Resolution</label>
               <div class="seg full" id="optRes">
-                <button data-v="0">Исходное</button><button data-v="720">720p</button><button data-v="1080">1080p</button><button data-v="1440">1440p</button><button data-v="2160">4K</button>
+                <button data-v="0" data-i18n="exp.resSource">Source</button><button data-v="720">720p</button><button data-v="1080">1080p</button><button data-v="1440">1440p</button><button data-v="2160">4K</button>
               </div>
             </div>
             <div class="opt mp4-only">
-              <label>Частота кадров</label>
+              <label data-i18n="exp.fps">Frame rate</label>
               <div class="seg full" id="optFps"><button data-v="24">24</button><button data-v="30">30</button><button data-v="60">60</button></div>
             </div>
             <div class="opt">
-              <label>Ускорение</label>
+              <label data-i18n="exp.speed">Speed</label>
               <div class="seg full wrap4" id="optSpeed"></div>
             </div>
             <div class="opt mp4-only">
-              <label>Качество</label>
+              <label data-i18n="exp.quality">Quality</label>
               <div class="seg full" id="optQ">
-                <button data-v="0.12">Компактно</button><button data-v="0.25">Высокое</button><button data-v="0.45">Максимум</button>
+                <button data-v="0.12" data-i18n="exp.qCompact">Compact</button><button data-v="0.25" data-i18n="exp.qHigh">High</button><button data-v="0.45" data-i18n="exp.qMax">Maximum</button>
               </div>
             </div>
-            <label class="switch opt mp4-only"><span class="ctl-label">Звук из оригинала</span><input type="checkbox" id="optAudio" checked /><i></i></label>
+            <label class="switch opt mp4-only"><span class="ctl-label" data-i18n="exp.audio">Original sound</span><input type="checkbox" id="optAudio" checked /><i></i></label>
             <div class="summary" id="summary"></div>
           </div>
           <div class="dlg-state" data-state="running" hidden>
-            <div class="run-title">Рендерим…</div>
+            <div class="run-title" data-i18n="exp.running">Rendering…</div>
             <div class="run-sub" id="runLabel"></div>
             <div class="bar"><div id="runBar"></div></div>
-            <div class="run-tip">Можно свернуть вкладку, рендер продолжится. Результат не уходит с твоего компьютера.</div>
+            <div class="run-tip" data-i18n="exp.tip">You can switch tabs — rendering keeps going. Nothing leaves your computer.</div>
           </div>
           <div class="dlg-state" data-state="done" hidden>
             <div class="done-icon" data-icon="check" data-size="22"></div>
-            <div class="run-title">Готово!</div>
+            <div class="run-title" data-i18n="exp.done">Done!</div>
             <div class="run-sub" id="doneLabel"></div>
           </div>
         </div>
       </div>
       <div class="dlg-foot">
-        <span class="foot-note" id="footNote">H.264 · MP4 · кодирование на видеокарте</span>
+        <span class="foot-note" id="footNote" data-i18n="exp.foot">H.264 · MP4 · GPU encoding</span>
         <div class="spacer"></div>
-        <button class="btn ghost" id="dlgCancel">Отмена</button>
-        <button class="btn primary glow" id="dlgGo" data-icon="zap">Рендерить</button>
+        <button class="btn ghost" id="dlgCancel">Cancel</button>
+        <button class="btn primary glow" id="dlgGo" data-icon="zap">Render</button>
       </div>
     </dialog>
 
     <!-- ───────── shortcuts ───────── -->
     <dialog id="helpDlg" class="dlg help">
       <div class="dlg-head">
-        <div class="dlg-title"><span data-icon="keyboard" data-size="16"></span> Горячие клавиши</div>
+        <div class="dlg-title"><span data-icon="keyboard" data-size="16"></span> <span data-i18n="help.title">Keyboard shortcuts</span></div>
         <button class="icon-btn" data-close data-icon="x"></button>
       </div>
       <div class="keys">
-        <div><kbd>Пробел</kbd><span>Пуск / пауза</span></div>
-        <div><kbd>←</kbd><kbd>→</kbd><span>Кадр назад / вперёд</span></div>
-        <div><kbd>⇧</kbd><kbd>←</kbd><kbd>→</kbd><span>±1 секунда</span></div>
-        <div><kbd>I</kbd><kbd>O</kbd><span>Начало / конец обрезки</span></div>
-        <div><kbd>C</kbd><span>Сравнение до/после</span></div>
-        <div><kbd>+</kbd><kbd>−</kbd><kbd>0</kbd><span>Зум / вписать</span></div>
-        <div><kbd>F</kbd><span>Полный экран</span></div>
-        <div><kbd>R</kbd><span>Случайный стиль</span></div>
-        <div><kbd>L</kbd><kbd>M</kbd><span>Цикл / звук</span></div>
-        <div><kbd>[</kbd><kbd>]</kbd><span>Медленнее / быстрее</span></div>
-        <div><kbd>E</kbd><span>Экспорт</span></div>
-        <div><kbd>T</kbd><span>Копировать кадр как текст</span></div>
-        <div><kbd>A</kbd><span>Сменить формат кадра</span></div>
-        <div><kbd>⌘</kbd><kbd>Z</kbd><span>Отменить (⇧ — повторить)</span></div>
-        <div><kbd>2×клик</kbd><span>По ползунку: сброс · по кадру: зум</span></div>
+        <div><kbd data-i18n="key.space">Space</kbd><span data-i18n="help.play">Play / pause</span></div>
+        <div><kbd>←</kbd><kbd>→</kbd><span data-i18n="help.step">Previous / next frame</span></div>
+        <div><kbd>⇧</kbd><kbd>←</kbd><kbd>→</kbd><span data-i18n="help.sec">±1 second</span></div>
+        <div><kbd>I</kbd><kbd>O</kbd><span data-i18n="help.trim">Trim start / end</span></div>
+        <div><kbd>C</kbd><span data-i18n="help.compare">Before/after wipe</span></div>
+        <div><kbd>+</kbd><kbd>−</kbd><kbd>0</kbd><span data-i18n="help.zoom">Zoom / fit</span></div>
+        <div><kbd>F</kbd><span data-i18n="help.full">Fullscreen</span></div>
+        <div><kbd>R</kbd><span data-i18n="help.random">Random style</span></div>
+        <div><kbd>L</kbd><kbd>M</kbd><span data-i18n="help.loopMute">Loop / sound</span></div>
+        <div><kbd>[</kbd><kbd>]</kbd><span data-i18n="help.speed">Slower / faster</span></div>
+        <div><kbd>E</kbd><span data-i18n="help.export">Export</span></div>
+        <div><kbd>T</kbd><span data-i18n="help.text">Copy frame as text</span></div>
+        <div><kbd>A</kbd><span data-i18n="help.aspect">Cycle frame format</span></div>
+        <div><kbd>⌘</kbd><kbd>Z</kbd><span data-i18n="help.undo">Undo (⇧ — redo)</span></div>
+        <div><kbd data-i18n="key.dbl">2× click</kbd><span data-i18n="help.dbl">On a slider: reset · on the frame: zoom</span></div>
       </div>
     </dialog>
 
     <div class="drag-overlay" id="dragOverlay">
       <div class="drag-box">
         <div class="drag-art">[ DROP ]</div>
-        <div>Отпусти, чтобы загрузить видео</div>
+        <div data-i18n="drag.text">Drop to load the video</div>
       </div>
     </div>
 

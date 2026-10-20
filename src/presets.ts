@@ -16,23 +16,23 @@ export const BUILTIN_PRESETS: Preset[] = [
       glow: 0.7, glowRadius: 7, noise: 0.015, fontWeight: '700', bg: '#050505',
     },
   },
-  { id: 'reference', name: 'Референс', s: { ...DEFAULTS } },
+  { id: 'reference', name: 'Reference', s: { ...DEFAULTS } },
   {
-    id: 'blood', name: 'Кровь',
+    id: 'blood', name: 'Blood',
     s: {
       ...DEFAULTS, colorMode: 'duotone', duoA: '#120000', duoB: '#ff2a2a', charset: 'letters',
       glow: 1.1, glowRadius: 10, contrast: 1.6, edges: true, edgeThreshold: 0.6, scanlines: 0.18, noise: 0.03,
     },
   },
   {
-    id: 'chrome', name: 'Хром',
+    id: 'chrome', name: 'Chrome',
     s: {
       ...DEFAULTS, colorMode: 'duotone', duoA: '#141418', duoB: '#ffffff', charset: 'detailed', fontWeight: '700',
       contrast: 1.7, gamma: 1.1, edges: true, edgeThreshold: 0.45, glow: 0.35, glowRadius: 5, noise: 0,
     },
   },
   {
-    id: 'matrix', name: 'Матрица',
+    id: 'matrix', name: 'Matrix',
     s: {
       ...DEFAULTS, charset: 'katakana', colorMode: 'duotone', duoA: '#002b0c', duoB: '#a8ffbc',
       edges: false, glow: 0.7, glowRadius: 8, noise: 0.06, columns: 130, cellAspect: 1.6, contrast: 1.4,
@@ -40,89 +40,89 @@ export const BUILTIN_PRESETS: Preset[] = [
     },
   },
   {
-    id: 'redrain', name: 'Красный дождь',
+    id: 'redrain', name: 'Red rain',
     s: {
       ...DEFAULTS, colorMode: 'accent', fg: '#b8b8c0', accent: '#ff1a1a', charset: 'letters', rain: 0.7,
       contrast: 1.3, glow: 0.8, glowRadius: 8, edges: false, noise: 0, columns: 150, font: 'fira',
     },
   },
   {
-    id: 'echo', name: 'Эхо',
+    id: 'echo', name: 'Echo',
     s: {
       ...DEFAULTS, trails: 0.86, motion: 0.55, colorNormalize: 0.8, saturation: 1.8, glow: 0.8, glowRadius: 9,
       edges: false, noise: 0, columns: 150,
     },
   },
   {
-    id: 'pixel', name: 'Пиксель-терминал',
+    id: 'pixel', name: 'Pixel terminal',
     s: {
       ...DEFAULTS, font: 'vt323', charset: 'standard', colorMode: 'duotone', duoA: '#001a06', duoB: '#7dff9e',
       columns: 120, cellAspect: 1.5, fontScale: 1.2, scanlines: 0.3, glow: 0.6, glowRadius: 7, edges: false, noise: 0.02,
     },
   },
   {
-    id: 'thermal', name: 'Тепловизор',
+    id: 'thermal', name: 'Thermal',
     s: { ...DEFAULTS, colorMode: 'thermal', charset: 'geo', columns: 140, contrast: 1.3, edges: false, glow: 0.6, glowRadius: 8, noise: 0 },
   },
   {
-    id: 'braille', name: 'Брайль',
+    id: 'braille', name: 'Braille',
     s: { ...DEFAULTS, charset: 'braille', columns: 220, cellAspect: 1.6, edges: false, glow: 0.4, noise: 0, contrast: 1.4, colorNormalize: 0.7 },
   },
   {
-    id: 'halftone', name: 'Полутон',
+    id: 'halftone', name: 'Halftone',
     s: {
       ...DEFAULTS, charset: 'dots', colorMode: 'mono', fg: '#111111', bg: '#f1ede4', invert: true,
       columns: 120, cellAspect: 1.15, fontScale: 1.25, edges: false, glow: 0, noise: 0, contrast: 1.3, fontWeight: '800',
     },
   },
   {
-    id: 'newspaper', name: 'Газета',
+    id: 'newspaper', name: 'Newspaper',
     s: {
       ...DEFAULTS, charset: 'detailed', colorMode: 'mono', fg: '#1a1a1a', bg: '#ece6d6', invert: true,
       columns: 170, edges: true, edgeThreshold: 0.5, glow: 0, noise: 0, contrast: 1.35,
     },
   },
   {
-    id: 'terminal', name: 'Терминал',
+    id: 'terminal', name: 'Terminal',
     s: { ...DEFAULTS, charset: 'standard', colorMode: 'mono', fg: '#f2f2f2', glow: 0.2, edges: false, columns: 140, noise: 0 },
   },
   {
-    id: 'amber', name: 'Янтарный CRT',
+    id: 'amber', name: 'Amber CRT',
     s: { ...DEFAULTS, colorMode: 'duotone', duoA: '#140900', duoB: '#ffb000', scanlines: 0.35, glow: 0.6, glowRadius: 9 },
   },
   {
-    id: 'ice', name: 'Лёд',
+    id: 'ice', name: 'Ice',
     s: {
       ...DEFAULTS, colorMode: 'duotone', duoA: '#00101c', duoB: '#c4f3ff', charset: 'letters',
       glow: 0.8, glowRadius: 9, edges: true, edgeThreshold: 0.6, contrast: 1.4, fontWeight: '300', columns: 190,
     },
   },
   {
-    id: 'neon', name: 'Неон',
+    id: 'neon', name: 'Neon',
     s: {
       ...DEFAULTS, charset: 'letters', colorMode: 'duotone', duoA: '#12002b', duoB: '#ff4fd8',
       glow: 1, glowRadius: 12, edges: true, edgeThreshold: 0.7, contrast: 1.5, columns: 150,
     },
   },
   {
-    id: 'ghost', name: 'Призрак',
+    id: 'ghost', name: 'Ghost',
     s: {
       ...DEFAULTS, bgVideo: 0.22, colorNormalize: 0.8, saturation: 1.6, glow: 0.6, glowRadius: 8,
       columns: 150, edges: false, noise: 0.03,
     },
   },
   {
-    id: 'blocks', name: 'Блоки',
+    id: 'blocks', name: 'Blocks',
     s: { ...DEFAULTS, charset: 'blocks', columns: 120, cellAspect: 2, edges: false, glow: 0.25, noise: 0, fontScale: 1.15 },
   },
   {
-    id: 'binary', name: 'Бинарный',
+    id: 'binary', name: 'Binary',
     s: {
       ...DEFAULTS, charset: 'binary', colorMode: 'duotone', duoA: '#001626', duoB: '#4fd8ff',
       columns: 160, edges: false, glow: 0.5, noise: 0.1, fontWeight: '700',
     },
   },
-  { id: 'dense', name: 'Плотный 4K', s: { ...DEFAULTS, columns: 300, glow: 0.35, glowRadius: 4 } },
+  { id: 'dense', name: 'Dense 4K', s: { ...DEFAULTS, columns: 300, glow: 0.35, glowRadius: 4 } },
 ];
 
 export const DUO_PALETTES: [string, string][] = [

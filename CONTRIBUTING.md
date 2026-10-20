@@ -24,6 +24,7 @@ npm run mcp:test -- some.mp4 /tmp  # optional: smoke-test the MCP tools
 - **Time-based effects** must be deterministic (use `hash01`, not `Math.random`), so preview and export match.
 - **Presets** — [`src/presets.ts`](src/presets.ts). A new preset is just a `Partial<Settings>`; add a label to `LABELS` in [`scripts/make-assets.ts`](scripts/make-assets.ts) if it should appear in the README gallery.
 - **MCP tools** — [`mcp/server.ts`](mcp/server.ts). Describe new settings in `SETTINGS_DOC` so models know how to use them.
+- **Translations** — [`src/i18n.ts`](src/i18n.ts). `en` is the source of truth; every other language must define the same keys (TypeScript fails the build otherwise). Static markup uses `data-i18n` attributes, dynamic text calls `t('key')`. To add a language, add a dictionary and an entry in `LANGS`.
 
 ## Regenerating README media
 

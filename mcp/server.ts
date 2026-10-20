@@ -10,31 +10,31 @@ const EDITOR_URL = process.env.ASCII_EDITOR_URL ?? 'http://localhost:5173/';
 
 /** What every look parameter does — shown to the model by list_styles. */
 const SETTINGS_DOC: Partial<Record<keyof Settings, string>> = {
-  columns: 'число символов по ширине, 40–400 (больше = детальнее)',
-  charset: `набор символов: ${Object.keys(CHARSETS).join(' | ')}`,
-  customChars: 'свои символы от пустого к плотному (при charset=custom)',
-  font: `шрифт: ${Object.keys(FONTS).join(' | ')}`,
+  columns: 'glyphs across, 40–400 (more = more detail)',
+  charset: `glyph set: ${Object.keys(CHARSETS).join(' | ')}`,
+  customChars: 'your own glyphs from empty to dense (with charset=custom)',
+  font: `font: ${Object.keys(FONTS).join(' | ')}`,
   fontWeight: "'300' | '500' | '700' | '800'",
-  cellAspect: 'высота ячейки к ширине, 1–2.5',
-  fontScale: 'масштаб глифа в ячейке, 0.6–1.6',
-  contrast: '0.3–3', brightness: '-0.5–0.5', gamma: '0.3–2.5', invert: 'инверсия яркости',
-  colorMode: "'original' (цвет из видео) | 'mono' | 'duotone' | 'accent' (всё графит, кроме оттенка accent) | 'thermal'",
-  saturation: '0–3 (original)', colorNormalize: 'яркость цвета 0–1 (original)',
-  fg: 'цвет символов (mono / база для accent)', duoA: 'тени (duotone)', duoB: 'свет (duotone)',
-  accent: 'цвет акцента и цифрового дождя', accentTolerance: 'охват акцента 0.02–0.3',
-  bg: 'цвет фона', bgVideo: 'прозрачность оригинала под символами 0–1',
-  edges: 'контуры символами / \\ | -', edgeThreshold: 'порог контуров 0.1–1.5',
-  noise: 'мерцание символов 0–0.3', glow: 'свечение 0–1.5', glowRadius: '1–30', scanlines: 'скан-линии 0–0.8',
-  audioReact: 'реакция на бас 0–1', glitch: 'глитч 0–1', decode: 'интро «декодирование», секунды 0–4',
-  rain: 'цифровой дождь 0–1', trails: 'шлейф 0–0.95', motion: 'только движение 0–1',
-  overlayText: 'текст поверх видео, выложенный своими же буквами', overlaySize: '0.08–0.7',
-  overlayPos: "'top' | 'center' | 'bottom'", overlayColor: 'цвет текста',
+  cellAspect: 'cell height relative to width, 1–2.5',
+  fontScale: 'glyph scale inside a cell, 0.6–1.6',
+  contrast: '0.3–3', brightness: '-0.5–0.5', gamma: '0.3–2.5', invert: 'invert brightness',
+  colorMode: "'original' (colors from the video) | 'mono' | 'duotone' | 'accent' (everything graphite except the accent hue) | 'thermal'",
+  saturation: '0–3 (original)', colorNormalize: 'color brightness 0–1 (original)',
+  fg: 'glyph color (mono / base for accent)', duoA: 'shadows (duotone)', duoB: 'highlights (duotone)',
+  accent: 'accent and digital-rain color', accentTolerance: 'accent hue range 0.02–0.3',
+  bg: 'background color', bgVideo: 'opacity of the original under the glyphs 0–1',
+  edges: 'draw edges with / \\ | -', edgeThreshold: 'edge threshold 0.1–1.5',
+  noise: 'glyph flicker 0–0.3', glow: 'glow 0–1.5', glowRadius: '1–30', scanlines: 'scanlines 0–0.8',
+  audioReact: 'react to bass 0–1', glitch: 'glitch 0–1', decode: '"decode" intro, seconds 0–4',
+  rain: 'digital rain 0–1', trails: 'trails 0–0.95', motion: 'motion only 0–1',
+  overlayText: 'text over the video, drawn out of its own letters', overlaySize: '0.08–0.7',
+  overlayPos: "'top' | 'center' | 'bottom'", overlayColor: 'text color',
 };
 
 const lookShape = {
-  preset: z.string().optional().describe('id или название пресета (см. list_styles), например "xand0dev", "matrix", "chrome"'),
+  preset: z.string().optional().describe('preset id or name (see list_styles), e.g. "xand0dev", "matrix", "chrome"'),
   settings: z.record(z.string(), z.unknown()).optional()
-    .describe('точечные переопределения параметров поверх пресета, например {"columns":200,"glow":0.8,"overlayText":"HELLO"}'),
+    .describe('parameter overrides on top of the preset, e.g. {"columns":200,"glow":0.8,"overlayText":"HELLO"}'),
 };
 const aspectEnum = z.enum(['source', '9:16', '1:1', '4:5', '16:9']);
 
@@ -42,30 +42,30 @@ const server = new McpServer(
   { name: 'ascii-render', version: '1.0.0' },
   {
     instructions: [
-      'ASCII Render превращает обычные видео в ASCII-видео (цветные символы, контуры, свечение, глитч, дождь и т. д.).',
-      'Типичный порядок: video_info → preview_frame (посмотри результат, подкрути preset/settings) → render_video.',
-      'Пути к файлам — абсолютные или через ~. Вывод по умолчанию кладётся рядом с исходником.',
-      'Перед долгим рендером покажи пользователю превью и уточни стиль, если запрос неоднозначен.',
+      'ASCII Render turns ordinary videos into ASCII-art videos (colored glyphs, edges, glow, glitch, digital rain and more).',
+      'Typical flow: video_info → preview_frame (look at the result, tweak preset/settings) → render_video.',
+      'File paths are absolute or start with ~. Output goes next to the source by default.',
+      'Before a long render, show the user a preview and confirm the style if the request is ambiguous.',
     ].join(' '),
   },
 );
 
 server.registerTool('list_styles', {
-  title: 'Пресеты и параметры ASCII',
-  description: 'Список встроенных пресетов стиля и всех параметров, которые можно переопределить через settings.',
+  title: 'ASCII presets and parameters',
+  description: 'Lists the built-in style presets and every parameter that can be overridden via settings.',
   annotations: { readOnlyHint: true },
 }, async () => {
-  const presets = BUILTIN_PRESETS.map((p) => `- ${p.id} — «${p.name}»`).join('\n');
+  const presets = BUILTIN_PRESETS.map((p) => `- ${p.id} — ${p.name}`).join('\n');
   const params = (Object.keys(DEFAULTS) as (keyof Settings)[])
-    .map((k) => `- ${k} (по умолчанию ${JSON.stringify(DEFAULTS[k])}): ${SETTINGS_DOC[k] ?? ''}`)
+    .map((k) => `- ${k} (default ${JSON.stringify(DEFAULTS[k])}): ${SETTINGS_DOC[k] ?? ''}`)
     .join('\n');
-  return { content: [{ type: 'text', text: `ПРЕСЕТЫ:\n${presets}\n\nПАРАМЕТРЫ (settings):\n${params}` }] };
+  return { content: [{ type: 'text', text: `PRESETS:\n${presets}\n\nPARAMETERS (settings):\n${params}` }] };
 });
 
 server.registerTool('video_info', {
-  title: 'Информация о видео',
-  description: 'Размер, длительность, fps и наличие звука у видеофайла.',
-  inputSchema: { path: z.string().describe('путь к видео') },
+  title: 'Video info',
+  description: 'Resolution, duration, fps and whether a video file has sound.',
+  inputSchema: { path: z.string().describe('path to the video') },
   annotations: { readOnlyHint: true },
 }, async ({ path }) => {
   const info = await videoInfo(path);
@@ -73,15 +73,15 @@ server.registerTool('video_info', {
 });
 
 server.registerTool('preview_frame', {
-  title: 'Превью кадра в ASCII',
-  description: 'Рендерит один кадр видео в выбранном стиле и возвращает картинку, чтобы оценить стиль до полного рендера.',
+  title: 'Preview a frame in ASCII',
+  description: 'Renders one frame of the video in the chosen style and returns the image, so the style can be judged before a full render.',
   inputSchema: {
-    path: z.string().describe('путь к видео'),
-    time: z.number().optional().describe('секунда кадра (по умолчанию середина)'),
+    path: z.string().describe('path to the video'),
+    time: z.number().optional().describe('frame time in seconds (default: middle of the video)'),
     ...lookShape,
-    aspect: aspectEnum.optional().describe('формат кадра'),
-    max_side: z.number().int().min(256).max(2048).optional().describe('длинная сторона картинки, по умолчанию 1024'),
-    save_to: z.string().optional().describe('если указать путь .png — сохранить кадр туда'),
+    aspect: aspectEnum.optional().describe('frame format'),
+    max_side: z.number().int().min(256).max(2048).optional().describe('longest side of the image, default 1024'),
+    save_to: z.string().optional().describe('a .png path to also save the frame to'),
   },
   annotations: { readOnlyHint: true },
 }, async (a) => {
@@ -94,18 +94,18 @@ server.registerTool('preview_frame', {
   return {
     content: [
       { type: 'image', data: r.png.toString('base64'), mimeType: 'image/png' },
-      { type: 'text', text: `Кадр ${r.width}×${r.height}, сетка ${r.grid.cols}×${r.grid.rows} символов${a.save_to ? `, сохранён в ${expandPath(a.save_to)}` : ''}.` },
+      { type: 'text', text: `Frame ${r.width}×${r.height}, grid ${r.grid.cols}×${r.grid.rows} glyphs${a.save_to ? `, saved to ${expandPath(a.save_to)}` : ''}.` },
     ],
   };
 });
 
 server.registerTool('frame_to_text', {
-  title: 'Кадр как ASCII-текст',
-  description: 'Возвращает кадр видео как обычный текст (ASCII-арт) — для README, чатов, терминала.',
+  title: 'Frame as ASCII text',
+  description: 'Returns a video frame as plain text (ASCII art) — for READMEs, chats and terminals.',
   inputSchema: {
-    path: z.string().describe('путь к видео'),
-    time: z.number().optional().describe('секунда кадра (по умолчанию середина)'),
-    columns: z.number().int().min(20).max(300).optional().describe('ширина в символах, по умолчанию 100'),
+    path: z.string().describe('path to the video'),
+    time: z.number().optional().describe('frame time in seconds (default: middle of the video)'),
+    columns: z.number().int().min(20).max(300).optional().describe('width in characters, default 100'),
     ...lookShape,
   },
   annotations: { readOnlyHint: true },
@@ -117,33 +117,33 @@ server.registerTool('frame_to_text', {
 });
 
 server.registerTool('render_video', {
-  title: 'Рендер ASCII-видео',
-  description: 'Полный рендер видео в ASCII: MP4 (со звуком) или GIF. Поддерживает обрезку, ускорение, формат кадра, сравнение до/после, смену стилей в такт музыке и плавный переход между стилями.',
+  title: 'Render an ASCII video',
+  description: 'Full ASCII render of a video: MP4 (with sound) or GIF. Supports trimming, speed-up, reframing, before/after comparison, beat-synced style switching and a smooth transition between styles.',
   inputSchema: {
-    path: z.string().describe('путь к исходному видео'),
-    output: z.string().optional().describe('куда сохранить; по умолчанию рядом с исходником: <имя>_ascii.mp4/.gif'),
-    format: z.enum(['mp4', 'gif']).optional().describe('по умолчанию mp4'),
+    path: z.string().describe('path to the source video'),
+    output: z.string().optional().describe('where to save; default is next to the source: <name>_ascii.mp4/.gif'),
+    format: z.enum(['mp4', 'gif']).optional().describe('default mp4'),
     ...lookShape,
-    aspect: aspectEnum.optional().describe('формат кадра: source / 9:16 (Reels, TikTok) / 1:1 / 4:5 / 16:9'),
-    start: z.number().optional().describe('начало фрагмента, сек'),
-    end: z.number().optional().describe('конец фрагмента, сек'),
-    speed: z.number().min(1).max(15).optional().describe('ускорение 1–15×'),
-    resolution: z.number().int().optional().describe('MP4: короткая сторона, 720 / 1080 / 1440 / 2160 (по умолчанию 1080)'),
-    gif_width: z.number().int().min(160).max(1200).optional().describe('GIF: ширина, по умолчанию 480'),
-    fps: z.number().int().min(5).max(60).optional().describe('кадров в секунду (MP4 30, GIF 15 по умолчанию)'),
-    audio: z.boolean().optional().describe('MP4: сохранить звук (по умолчанию да)'),
-    compare: z.enum(['none', 'wipe']).optional().describe('wipe — оригинал и ASCII со шторкой до/после'),
-    beat_presets: z.array(z.string()).optional().describe('пресеты, которые переключаются на каждом бите музыки'),
-    beat_sensitivity: z.number().min(0).max(1).optional().describe('чувствительность к битам, по умолчанию 0.5'),
-    animate_to_preset: z.string().optional().describe('плавно перейти к этому пресету к концу фрагмента'),
-    animate_to_settings: z.record(z.string(), z.unknown()).optional().describe('переопределения для конечного стиля перехода'),
+    aspect: aspectEnum.optional().describe('frame format: source / 9:16 (Reels, TikTok) / 1:1 / 4:5 / 16:9'),
+    start: z.number().optional().describe('clip start, seconds'),
+    end: z.number().optional().describe('clip end, seconds'),
+    speed: z.number().min(1).max(15).optional().describe('speed-up 1–15×'),
+    resolution: z.number().int().optional().describe('MP4: short side, 720 / 1080 / 1440 / 2160 (default 1080)'),
+    gif_width: z.number().int().min(160).max(1200).optional().describe('GIF: width, default 480'),
+    fps: z.number().int().min(5).max(60).optional().describe('frames per second (default MP4 30, GIF 15)'),
+    audio: z.boolean().optional().describe('MP4: keep the sound (default yes)'),
+    compare: z.enum(['none', 'wipe']).optional().describe('wipe — original and ASCII with a before/after divider'),
+    beat_presets: z.array(z.string()).optional().describe('presets to cycle through on every beat of the music'),
+    beat_sensitivity: z.number().min(0).max(1).optional().describe('beat sensitivity, default 0.5'),
+    animate_to_preset: z.string().optional().describe('smoothly transition to this preset by the end of the clip'),
+    animate_to_settings: z.record(z.string(), z.unknown()).optional().describe('overrides for the transition target style'),
   },
   annotations: { readOnlyHint: false, destructiveHint: false },
 }, async (a, extra) => {
   const look = buildLook(a.preset, a.settings);
   const beatLooks = a.beat_presets?.map((id) => {
     const p = findPreset(id);
-    if (!p) throw new Error(`Нет пресета «${id}» для beat_presets`);
+    if (!p) throw new Error(`Unknown preset "${id}" in beat_presets`);
     return { ...DEFAULTS, ...p.s };
   });
   const animateTo = a.animate_to_preset || a.animate_to_settings
@@ -162,22 +162,22 @@ server.registerTool('render_video', {
     lastSent = Date.now();
     extra.sendNotification({
       method: 'notifications/progress',
-      params: { progressToken: token, progress: done, total, message: `кадр ${done}/${total}` },
+      params: { progressToken: token, progress: done, total, message: `frame ${done}/${total}` },
     }).catch(() => {});
   });
 
   const mb = (res.bytes / 1e6).toFixed(1);
   const lines = [
-    `Готово: ${res.output}`,
-    `${res.width}×${res.height}, ${res.fps} fps, ${res.duration.toFixed(2)} с (${res.frames} кадров), ${mb} МБ, рендер ${res.seconds.toFixed(1)} с.`,
-    `Фрагмент ${res.start.toFixed(2)}–${res.end.toFixed(2)} с${res.speed > 1 ? `, ускорение ${res.speed}×` : ''}${beatLooks ? `, битов: ${res.beats}` : ''}.`,
+    `Done: ${res.output}`,
+    `${res.width}×${res.height}, ${res.fps} fps, ${res.duration.toFixed(2)} s (${res.frames} frames), ${mb} MB, rendered in ${res.seconds.toFixed(1)} s.`,
+    `Clip ${res.start.toFixed(2)}–${res.end.toFixed(2)} s${res.speed > 1 ? `, ${res.speed}× speed` : ''}${beatLooks ? `, beats: ${res.beats}` : ''}.`,
   ];
   return { content: [{ type: 'text', text: lines.join('\n') }] };
 });
 
 server.registerTool('editor_link', {
-  title: 'Открыть стиль в редакторе',
-  description: 'Ссылка на веб-редактор ASCII Render с уже применённым стилем — чтобы пользователь докрутил его руками.',
+  title: 'Open a style in the editor',
+  description: 'A link to the ASCII Render web editor with the style already applied, so the user can fine-tune it by hand.',
   inputSchema: { ...lookShape },
   annotations: { readOnlyHint: true },
 }, async (a) => {
@@ -188,7 +188,7 @@ server.registerTool('editor_link', {
   return {
     content: [{
       type: 'text',
-      text: `${EDITOR_URL}#style=${hash}\n(редактор должен быть запущен: npm run dev в папке проекта)`,
+      text: `${EDITOR_URL}#style=${hash}\n(the editor must be running: npm run dev in the project folder — or set ASCII_EDITOR_URL to a hosted copy)`,
     }],
   };
 });
