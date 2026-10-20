@@ -1,0 +1,30 @@
+name: Bug report
+description: Something renders or exports wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what you got. Screenshots help a lot.
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Web editor
+        - MCP server
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Browser / OS / Node version
+      placeholder: Chrome 140, macOS 15, Node 22
+  - type: textarea
+    id: style
+    attributes:
+      label: Style link or settings
+      description: Paste the 🔗 share link from the editor, or the settings you passed to render_video.

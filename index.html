@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII Render</title>
+    <meta name="description" content="Turn any video into living ASCII art — in your browser or through your AI assistant (MCP)." />
+    <meta property="og:title" content="ASCII Render" />
+    <meta property="og:description" content="Turn any video into living ASCII art. Browser editor · AI tool (MCP) · MP4 & GIF export · 100% local." />
+    <meta name="theme-color" content="#d90b1c" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23d90b1c'/><text x='16' y='23' font-family='monospace' font-weight='900' font-size='19' text-anchor='middle' fill='%23fff'>@</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@300;500;700;800&family=IBM+Plex+Mono:wght@300;500;700&family=Space+Mono:wght@400;700&family=Fira+Code:wght@300;500;700&family=Courier+Prime:wght@400;700&family=VT323&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ───────── top bar ───────── -->
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">@</div>
+          <div class="brand-text">ASCII<b>render</b></div>
+        </div>
+        <div class="file-chip" id="fileChip" hidden>
+          <span class="dot"></span><span id="fileName"></span><span class="meta" id="fileMeta"></span>
+        </div>
+        <div class="spacer"></div>
+        <div class="seg view-seg" id="viewSeg">
+          <button data-mode="ascii" class="on" data-icon="ascii" title="Только ASCII (C)">ASCII</button>
+          <button data-mode="compare" data-icon="compare" title="Шторка до/после (C)">Сравнить</button>
+        </div>
+        <div class="spacer"></div>
+        <div class="tb-group">
+          <button class="icon-btn" id="undoBtn" data-icon="undo" title="Отменить (⌘Z)"></button>
+          <button class="icon-btn" id="redoBtn" data-icon="redo" title="Повторить (⇧⌘Z)"></button>
+          <button class="icon-btn" id="helpBtn" data-icon="keyboard" title="Горячие клавиши (?)"></button>
+        </div>
+        <div class="tb-group">
+          <button class="btn ghost" id="openBtn" data-icon="upload">Открыть</button>
+          <button class="btn ghost" id="camBtn" data-icon="camera">Камера</button>
+          <button class="btn primary glow" id="exportBtn" data-icon="download" disabled>Экспорт</button>
+        </div>
+        <input type="file" id="file" accept="video/*" hidden />
+      </header>
+
+      <!-- ───────── sidebar ───────── -->
+      <aside class="sidebar">
+        <div class="presets-block">
+          <div class="block-head">
+            <span data-icon="layers" data-size="14">Пресеты</span>
+            <div class="block-actions">
+              <button class="icon-btn sm" id="randomBtn" data-icon="dice" title="Случайный стиль (R)"></button>
+              <button class="icon-btn sm" id="shareBtn" data-icon="link" title="Скопировать ссылку на этот стиль"></button>
+              <button class="icon-btn sm" id="jsonBtn" data-icon="braces" title="Сохранить стиль в .json"></button>
+              <button class="icon-btn sm" id="importBtn" data-icon="folder" title="Импорт стиля из .json"></button>
+              <button class="icon-btn sm" id="savePresetBtn" data-icon="plus" title="Сохранить текущие настройки"></button>
+            </div>
+          </div>
+          <form class="save-preset" id="savePresetForm" hidden>
+            <input id="presetName" type="text" placeholder="Название пресета" maxlength="24" autocomplete="off" />
+            <button class="btn primary sm" type="submit">Сохранить</button>
+          </form>
+          <div class="presets" id="presets"></div>
+          <button class="presets-more" id="presetsMore"></button>
+        </div>
+        <div id="controls"></div>
+        <section class="sec" id="animSec">
+          <button class="sec-head" id="animHead"><span class="sec-ic" data-icon="music" data-size="14"></span><span>Анимация и ритм<em class="badge">PRO</em></span><span class="sec-chev" data-icon="chevron" data-size="14"></span></button>
+          <div class="sec-body"><div class="sec-inner">
+            <div class="sub-title">🎚 Переход A → B</div>
+            <div class="ab">
+              <button class="ab-slot" id="slotA" title="Загрузить A в редактор"><canvas></canvas><b>A</b><span>пусто</span></button>
+              <div class="ab-arrow">→</div>
+              <button class="ab-slot" id="slotB" title="Загрузить B в редактор"><canvas></canvas><b>B</b><span>пусто</span></button>
+            </div>
+            <div class="ab-actions">
+              <button class="btn ghost sm" id="setA">Текущие → A</button>
+              <button class="btn ghost sm" id="setB">Текущие → B</button>
+            </div>
+            <label class="switch"><span class="ctl-label">Анимировать по фрагменту</span><input type="checkbox" id="animOn" /><i></i></label>
+            <p class="hint">Все параметры плавно перетекают от A в начале фрагмента к B в конце. Клик по слоту загружает его в редактор.</p>
+
+            <div class="sub-title">🥁 Смена стиля в такт</div>
+            <label class="switch"><span class="ctl-label">Переключать пресеты на битах</span><input type="checkbox" id="beatOn" /><i></i></label>
+            <div class="ctl ctl-range">
+              <div class="ctl-head"><span class="ctl-label">Чувствительность</span><span class="ctl-num" id="beatSensVal">0.50</span></div>
+              <input type="range" id="beatSens" min="0" max="1" step="0.01" value="0.5" />
+            </div>
+            <div class="beat-chips" id="beatChips"></div>
+            <p class="hint" id="beatInfo">Загрузи видео со звуком.</p>
+          </div></div>
+        </section>
+        <div class="sidebar-foot">
+          <button class="btn ghost sm" id="resetBtn" data-icon="reset">Сбросить всё</button>
+        </div>
+      </aside>
+
+      <!-- ───────── viewer ───────── -->
+      <section class="viewer" id="viewport">
+        <div class="bg-grid"></div>
+        <div class="frame" id="frame">
+          <canvas id="out"></canvas>
+          <div class="orig-layer" id="origLayer"><video id="video" playsinline preload="auto"></video></div>
+          <div class="wipe-handle" id="wipeHandle">
+            <div class="wipe-line"></div>
+            <div class="wipe-knob"><span>‹</span><span>›</span></div>
+            <div class="wipe-tag l">ОРИГИНАЛ</div>
+            <div class="wipe-tag r">ASCII</div>
+          </div>
+        </div>
+
+        <div class="hud hud-tl" id="hudStats" hidden>
+          <span class="live-dot" id="liveDot" hidden>LIVE</span>
+          <span class="meter" id="audioMeter" hidden title="Уровень баса"><i></i><i></i><i></i><i></i><i></i></span>
+          <span id="statGrid">—</span><span class="sep"></span><span id="statMs">—</span><span class="sep"></span><span id="statRes">—</span>
+        </div>
+        <div class="hud hud-tc" id="hudAspect" hidden>
+          <span class="hud-ic" data-icon="crop" data-size="13"></span>
+          <div class="seg mini" id="aspectSeg">
+            <button data-a="source">Ориг.</button><button data-a="9:16">9:16</button><button data-a="1:1">1:1</button><button data-a="4:5">4:5</button><button data-a="16:9">16:9</button>
+          </div>
+        </div>
+        <div class="hud hud-tr" id="hudZoom" hidden>
+          <button class="icon-btn sm" id="zoomOut" data-icon="minus" title="Отдалить (−)"></button>
+          <button class="zoom-val" id="zoomVal" title="1:1 пиксель">100%</button>
+          <button class="icon-btn sm" id="zoomIn" data-icon="plus" title="Приблизить (+)"></button>
+          <button class="icon-btn sm" id="zoomFit" data-icon="fit" title="Вписать (0)"></button>
+          <button class="icon-btn sm" id="fullBtn" data-icon="maximize" title="Полный экран (F)"></button>
+        </div>
+        <div class="hud hud-bc" id="hudSnap" hidden>
+          <button class="btn ghost sm" id="pngBtn" data-icon="image">Кадр PNG</button>
+          <button class="btn ghost sm" id="copyTxtBtn" data-icon="type" title="Скопировать кадр как ASCII-текст (T)">Копировать текст</button>
+        </div>
+
+        <div class="hero" id="hero">
+          <canvas id="heroCanvas"></canvas>
+          <div class="hero-card">
+            <div class="hero-badge">VIDEO → ASCII</div>
+            <h1>Преврати любое видео<br />в <span class="grad">живой ASCII</span></h1>
+            <p>Цветные символы, контуры, свечение. Экспорт в MP4 до 4K со звуком, всё прямо в браузере.</p>
+            <div class="hero-actions">
+              <button class="btn primary lg glow" id="heroOpen" data-icon="upload">Выбрать видео</button>
+              <button class="btn ghost lg" id="heroCam" data-icon="camera">Камера</button>
+              <button class="btn ghost lg" id="heroDemo" data-icon="film">Демо</button>
+            </div>
+            <div class="hero-hint">или перетащи файл сюда · MP4 · MOV · WebM</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── dock ───────── -->
+      <footer class="dock" id="dock">
+        <div class="transport">
+          <button class="icon-btn" id="stepBack" data-icon="stepBack" title="Кадр назад (←)"></button>
+          <button class="play-btn" id="playBtn" title="Пуск / пауза (Пробел)"></button>
+          <button class="icon-btn" id="stepFwd" data-icon="stepFwd" title="Кадр вперёд (→)"></button>
+          <div class="timecode"><span id="tcCur">00:00.00</span><span class="slash">/</span><span id="tcDur">00:00.00</span></div>
+          <button class="icon-btn toggle on" id="loopBtn" data-icon="repeat" title="Зацикливание (L)"></button>
+          <div class="speed" id="speed">
+            <button class="speed-btn" id="speedBtn" title="Ускорение ( [ / ] )"><span data-icon="zap" data-size="13"></span><b id="speedVal">1×</b></button>
+            <div class="speed-pop" id="speedPop" hidden>
+              <div class="speed-head"><span>Ускорение</span><b id="speedPopVal">1×</b></div>
+              <input type="range" id="speedRange" min="1" max="15" step="1" value="1" />
+              <div class="speed-scale"><span>1×</span><span>5×</span><span>10×</span><span>15×</span></div>
+              <div class="speed-chips" id="speedChips"></div>
+              <div class="speed-note">Работает в превью и при экспорте: видео и звук ускоряются вместе</div>
+            </div>
+          </div>
+          <button class="icon-btn" id="muteBtn" title="Звук (M)"></button>
+          <button class="rec-btn" id="recBtn" hidden><span class="rec-dot"></span><span id="recLabel">Запись</span></button>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <div class="trim-info">
+          <span data-icon="scissors" data-size="13"></span>
+          <button class="trim-tc" id="inBtn" title="Поставить начало (I)">00:00.00</button>
+          <span class="arrow">→</span>
+          <button class="trim-tc" id="outBtn" title="Поставить конец (O)">00:00.00</button>
+          <span class="trim-len" id="trimLen"></span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ───────── export dialog ───────── -->
+    <dialog id="exportDlg" class="dlg">
+      <div class="dlg-head">
+        <div class="dlg-title"><span data-icon="film" data-size="16"></span> Экспорт видео</div>
+        <button class="icon-btn" id="dlgClose" data-icon="x"></button>
+      </div>
+      <div class="dlg-body">
+        <div class="dlg-preview">
+          <canvas id="exportPreview"></canvas>
+          <video id="resultVideo" controls playsinline hidden></video>
+          <img id="resultImg" alt="Готовый GIF" hidden />
+          <div class="ring" id="ring" hidden>
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg" /><circle cx="60" cy="60" r="52" class="ring-fg" id="ringFg" /></svg>
+            <div class="ring-text"><b id="ringPct">0%</b><span id="ringEta"></span></div>
+          </div>
+        </div>
+        <div class="dlg-side">
+          <div class="dlg-state" data-state="config">
+            <div class="opt">
+              <label>Формат</label>
+              <div class="seg full" id="optFormat"><button data-v="mp4">MP4 видео</button><button data-v="gif">GIF</button></div>
+            </div>
+            <div class="opt">
+              <label>Кадр</label>
+              <div class="seg full" id="optCompare"><button data-v="none">Только ASCII</button><button data-v="wipe">До / После</button></div>
+            </div>
+            <div class="opt gif-only">
+              <label>Ширина GIF</label>
+              <div class="seg full" id="optGifW"><button data-v="320">320</button><button data-v="480">480</button><button data-v="640">640</button><button data-v="800">800</button></div>
+            </div>
+            <div class="opt gif-only">
+              <label>Кадров в секунду</label>
+              <div class="seg full" id="optGifFps"><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button><button data-v="25">25</button></div>
+            </div>
+            <div class="opt mp4-only">
+              <label>Разрешение</label>
+              <div class="seg full" id="optRes">
+                <button data-v="0">Исходное</button><button data-v="720">720p</button><button data-v="1080">1080p</button><button data-v="1440">1440p</button><button data-v="2160">4K</button>
+              </div>
+            </div>
+            <div class="opt mp4-only">
+              <label>Частота кадров</label>
+              <div class="seg full" id="optFps"><button data-v="24">24</button><button data-v="30">30</button><button data-v="60">60</button></div>
+            </div>
+            <div class="opt">
+              <label>Ускорение</label>
+              <div class="seg full wrap4" id="optSpeed"></div>
+            </div>
+            <div class="opt mp4-only">
+              <label>Качество</label>
+              <div class="seg full" id="optQ">
+                <button data-v="0.12">Компактно</button><button data-v="0.25">Высокое</button><button data-v="0.45">Максимум</button>
+              </div>
+            </div>
+            <label class="switch opt mp4-only"><span class="ctl-label">Звук из оригинала</span><input type="checkbox" id="optAudio" checked /><i></i></label>
+            <div class="summary" id="summary"></div>
+          </div>
+          <div class="dlg-state" data-state="running" hidden>
+            <div class="run-title">Рендерим…</div>
+            <div class="run-sub" id="runLabel"></div>
+            <div class="bar"><div id="runBar"></div></div>
+            <div class="run-tip">Можно свернуть вкладку, рендер продолжится. Результат не уходит с твоего компьютера.</div>
+          </div>
+          <div class="dlg-state" data-state="done" hidden>
+            <div class="done-icon" data-icon="check" data-size="22"></div>
+            <div class="run-title">Готово!</div>
+            <div class="run-sub" id="doneLabel"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <span class="foot-note" id="footNote">H.264 · MP4 · кодирование на видеокарте</span>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="dlgCancel">Отмена</button>
+        <button class="btn primary glow" id="dlgGo" data-icon="zap">Рендерить</button>
+      </div>
+    </dialog>
+
+    <!-- ───────── shortcuts ───────── -->
+    <dialog id="helpDlg" class="dlg help">
+      <div class="dlg-head">
+        <div class="dlg-title"><span data-icon="keyboard" data-size="16"></span> Горячие клавиши</div>
+        <button class="icon-btn" data-close data-icon="x"></button>
+      </div>
+      <div class="keys">
+        <div><kbd>Пробел</kbd><span>Пуск / пауза</span></div>
+        <div><kbd>←</kbd><kbd>→</kbd><span>Кадр назад / вперёд</span></div>
+        <div><kbd>⇧</kbd><kbd>←</kbd><kbd>→</kbd><span>±1 секунда</span></div>
+        <div><kbd>I</kbd><kbd>O</kbd><span>Начало / конец обрезки</span></div>
+        <div><kbd>C</kbd><span>Сравнение до/после</span></div>
+        <div><kbd>+</kbd><kbd>−</kbd><kbd>0</kbd><span>Зум / вписать</span></div>
+        <div><kbd>F</kbd><span>Полный экран</span></div>
+        <div><kbd>R</kbd><span>Случайный стиль</span></div>
+        <div><kbd>L</kbd><kbd>M</kbd><span>Цикл / звук</span></div>
+        <div><kbd>[</kbd><kbd>]</kbd><span>Медленнее / быстрее</span></div>
+        <div><kbd>E</kbd><span>Экспорт</span></div>
+        <div><kbd>T</kbd><span>Копировать кадр как текст</span></div>
+        <div><kbd>A</kbd><span>Сменить формат кадра</span></div>
+        <div><kbd>⌘</kbd><kbd>Z</kbd><span>Отменить (⇧ — повторить)</span></div>
+        <div><kbd>2×клик</kbd><span>По ползунку: сброс · по кадру: зум</span></div>
+      </div>
+    </dialog>
+
+    <div class="drag-overlay" id="dragOverlay">
+      <div class="drag-box">
+        <div class="drag-art">[ DROP ]</div>
+        <div>Отпусти, чтобы загрузить видео</div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

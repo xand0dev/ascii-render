@@ -1,0 +1,8 @@
+node_modules
+dist
+public/test.mp4
+mcp/dist
+scripts/dist
+.DS_Store
+*.log
+.claude/

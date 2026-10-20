@@ -1,0 +1,55 @@
+{
+  "name": "ascii-render",
+  "version": "1.0.0",
+  "description": "Turn any video into living ASCII art — browser editor and MCP tool for AI assistants.",
+  "keywords": [
+    "ascii",
+    "ascii-art",
+    "video",
+    "video-editor",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "webcodecs",
+    "canvas",
+    "generative"
+  ],
+  "author": "Oleksandr Riasnyi (https://github.com/xand0dev)",
+  "license": "MIT",
+  "homepage": "https://xand0dev.github.io/ascii-render/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xand0dev/ascii-render.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xand0dev/ascii-render/issues"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "build:mcp": "esbuild mcp/server.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outfile=mcp/dist/server.mjs",
+    "mcp": "node mcp/dist/server.mjs",
+    "mcp:test": "npm run build:mcp && node mcp/smoke-test.mjs",
+    "assets": "esbuild scripts/make-assets.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outfile=scripts/dist/make-assets.mjs --log-level=warning && node scripts/dist/make-assets.mjs"
+  },
+  "devDependencies": {
+    "@types/dom-webcodecs": "^0.1.19",
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@napi-rs/canvas": "^1.0.11",
+    "gifenc": "^1.0.3",
+    "mp4-muxer": "^5.2.2",
+    "zod": "^4.6.7"
+  }
+}

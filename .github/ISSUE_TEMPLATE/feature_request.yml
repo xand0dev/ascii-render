@@ -1,0 +1,11 @@
+name: Feature or preset idea
+description: A new effect, preset, export format or tool
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      description: What should it do? A reference image or video link is great.
+    validations:
+      required: true

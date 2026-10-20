@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ascii-render": {
+      "command": "node",
+      "args": ["mcp/dist/server.mjs"]
+    }
+  }
+}

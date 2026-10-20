@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Type-check and build the editor
+        run: npm run build
+      - name: Type-check and bundle the MCP server
+        run: |
+          npx tsc -p mcp/tsconfig.json
+          npm run build:mcp
