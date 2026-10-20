@@ -654,11 +654,34 @@ $('camBtn').addEventListener('click', startCamera);
 $('heroCam').addEventListener('click', startCamera);
 
 /** Procedural demo clip shipped in public/ (regenerate with `npm run assets`). */
+let demoLoading = false;
 async function loadDemo(at = 0) {
+  if (demoLoading) return;
+  demoLoading = true;
+  const btn = $('heroDemo');
+  const label = btn.querySelector<HTMLElement>('[data-i18n]')!;
+  btn.classList.add('loading');
+  const progress = (p: number | null) => {
+    btn.style.setProperty('--p', `${Math.round((p ?? 0) * 100)}%`);
+    label.textContent = p === null ? t('hero.demoLoading') : `${t('hero.demoLoading')} ${Math.round(p * 100)}%`;
+  };
+  progress(0);
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}demo.mp4`);
-    if (!res.ok) throw new Error(String(res.status));
-    const file = new File([await res.blob()], 'demo.mp4', { type: 'video/mp4' });
+    if (!res.ok || !res.body) throw new Error(String(res.status));
+    // stream it so slow connections see progress instead of a frozen hero
+    const total = Number(res.headers.get('content-length')) || 0;
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let got = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      got += value.length;
+      progress(total ? Math.min(1, got / total) : null);
+    }
+    const file = new File(chunks as BlobPart[], 'demo.mp4', { type: 'video/mp4' });
     loadFile(file);
     video.addEventListener('loadeddata', () => {
       if (at > 0) video.currentTime = at;
@@ -666,6 +689,10 @@ async function loadDemo(at = 0) {
     }, { once: true });
   } catch {
     toast(t('toast.demoMissing'), 'err');
+  } finally {
+    demoLoading = false;
+    btn.classList.remove('loading');
+    label.textContent = t('hero.demo');
   }
 }
 $('heroDemo').addEventListener('click', () => loadDemo());

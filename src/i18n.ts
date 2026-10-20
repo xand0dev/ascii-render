@@ -63,6 +63,7 @@ const en = {
   'hero.p': 'Colored glyphs, edges, glow. Export MP4 up to 4K with sound — all right in your browser.',
   'hero.open': 'Choose a video',
   'hero.demo': 'Demo',
+  'hero.demoLoading': 'Loading demo…',
   'hero.hint': 'or drop a file here · MP4 · MOV · WebM',
   'drag.text': 'Drop to load the video',
 
@@ -360,6 +361,7 @@ const uk: Record<Key, string> = {
   'hero.p': 'Кольорові символи, контури, світіння. Експорт у MP4 до 4K зі звуком — усе просто в браузері.',
   'hero.open': 'Вибрати відео',
   'hero.demo': 'Демо',
+  'hero.demoLoading': 'Завантажую демо…',
   'hero.hint': 'або перетягни файл сюди · MP4 · MOV · WebM',
   'drag.text': 'Відпусти, щоб завантажити відео',
 

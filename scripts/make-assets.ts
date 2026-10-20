@@ -284,13 +284,14 @@ async function makeReel() {
 
 // ───────── source footage for the in-app "Try the demo" button ─────────
 async function makeDemoSource() {
-  const W = 1280, H = 720, FPS = 30;
+  // small on purpose: it is downloaded by every visitor of the live demo, and the ASCII grid doesn't need more pixels
+  const W = 960, H = 540, FPS = 30;
   const parts: [Scene, number, number][] = [[drawCube, 6, 1], [drawDonut, 5, 0.6], [drawMandel, 4, 0.42]];
   const sources = parts.map(([scene, dur, work]) => ({ src: sceneSource(scene, W, H, work), dur }));
   const plan: { k: number; t: number }[] = [];
   sources.forEach((s, k) => { for (let i = 0; i < s.dur * FPS; i++) plan.push({ k, t: i / FPS }); });
   mkdirSync('public', { recursive: true });
-  await encodeMp4('public/demo.mp4', W, H, FPS, plan.length, (i) => sources[plan[i].k].src(plan[i].t), 24);
+  await encodeMp4('public/demo.mp4', W, H, FPS, plan.length, (i) => sources[plan[i].k].src(plan[i].t), 28);
 }
 
 const only = process.argv[2];

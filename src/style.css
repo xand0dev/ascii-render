@@ -639,3 +639,6 @@ kbd {
 /* ───────── language switch ───────── */
 .lang-seg { margin-right: 6px; }
 .lang-seg button { height: 24px; padding: 0 9px; font: 700 10.5px var(--mono); letter-spacing: .06em; }
+
+/* demo download progress on the hero button */
+.btn.loading { pointer-events: none; background: linear-gradient(90deg, var(--accent-soft) var(--p, 0%), transparent var(--p, 0%)); border-color: rgba(255,31,45,.45); }
